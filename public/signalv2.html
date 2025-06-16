@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIME Trading Zone Signals V2</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/dbc9d516d6.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0d0d0d;
+            --bg-card: #1a1a1a;
+            --text-light: #ffffff;
+            --gold: #d4af37;
+            --highlight: #ffcc00;
+            --accent: #ffae00;
+            --border-dark: #333;
+            --blue-glow: #007bff;
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            background-image: url('eagle.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: 400px auto;
+            background-attachment: fixed;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(13,13,13,0.85);
+            z-index: 0;
+            pointer-events: none;
+        }
+        #mainContent, #loginForm, #userAvatar, #customAlert {
+            position: relative;
+            z-index: 1;
+        }
+
+        label {
+            color: var(--gold);
+        }
+
+        .h1 {
+            position: relative;
+            top: 20px;
+            text-align: center;
+            font-size: 2rem;
+            color: var(--gold);
+            font-weight: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--highlight);
+            font-weight: 400;
+            margin: 2rem 0 1rem;
+        }
+
+        form input,
+        form select,
+        button {
+            display: block;
+            width: 100%;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            border-radius: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            color: var(--gold);
+            font-size: 1rem;
+        }
+
+        form input:focus,
+        form select:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px var(--gold);
+            color: var(--gold);
+        }
+
+        select option {
+            background-color: var(--bg-dark);
+            color: deepskyblue;
+        }
+
+        button[type="submit"],
+        .btn {
+            background: linear-gradient(45deg, var(--gold), var(--accent));
+            color: var(--bg-dark);
+            border: none;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover,
+        .btn:hover {
+            filter: brightness(1.1);
+        }
+
+        table {
+            width: 100%;
+            margin-top: 1.5rem;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            border: 1px solid var(--border-dark);
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--border-dark);
+            color: var(--highlight);
+        }
+
+        .buy {
+            color: #00ff99;
+            font-weight: bold;
+        }
+
+        .sell {
+            color: #ff5555;
+            font-weight: bold;
+        }
+
+        #loader {
+            display: none;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        #loader span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin: 0 5px;
+            background-color: var(--gold);
+            border-radius: 50%;
+            animation: bounce 1.2s infinite ease-in-out both;
+        }
+
+        #loader span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        #loader span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            } 40% {
+                transform: scale(1);
+            }
+        }
+
+        .custom-alert {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            box-shadow: 0 0 10px var(--gold);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            pointer-events: none;
+        }
+
+        .custom-alert.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+
+
+        /* User Avatar Corner */
+        #userAvatar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .coin-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            padding: 8px 12px;
+            border-radius: 25px;
+            border: 1px solid var(--gold);
+        }
+
+        .coin-count {
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .user-avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 200px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            display: none;
+        }
+
+        .menu-header {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-dark);
+        }
+
+        .user-email {
+            color: var(--gold);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .user-status {
+            color: var(--highlight);
+            font-size: 12px;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu-btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .upgrade-btn {
+            background: var(--gold);
+            color: var(--bg-dark);
+        }
+
+        .logout-btn {
+            background: #ff4444;
+            color: white;
+        }
+
+        /* Login Form */
+        .login-form {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+            z-index: 1001;
+            min-width: 300px;
+        }
+
+        .login-title {
+            color: var(--gold);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .login-input {
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            border: 1px solid var(--gold);
+            background: var(--bg-dark);
+            color: var(--gold);
+            border-radius: 4px;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--gold);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .register-btn {
+            width: 100%;
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            padding: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .auth-message {
+            margin-top: 1rem;
+            text-align: center;
+            color: #ff4444;
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+
+
+            #userAvatar {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Switcher (Left Side) -->
+    <div id="pageSwitcher" style="position: fixed; top: 20px; left: 20px; z-index: 1000; display: none;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Premium OTC Market Button -->
+      <!--      <button id="otcMarketBtn" style="background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 8px 12px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3); transition: all 0.3s ease; display: none; font-size: 12px;" onclick="goToOTCMarket();">
+                <i class="fas fa-chart-line" style="margin-right: 4px; font-size: 10px;"></i> OTC MARKET
+            </button> -->
+        </div>
+    </div>
+
+    <!-- User Avatar Corner -->
+    <div id="userAvatar">
+        <div class="user-menu" onclick="toggleUserMenu()">
+
+            <div class="coin-display">
+                <span id="coinCount" class="coin-count">0</span>
+                <i class="fas fa-coins" style="color: var(--gold); font-size: 14px;"></i>
+            </div>
+            <div class="user-avatar-circle">
+                <i class="fas fa-user" style="color: var(--gold); font-size: 18px;"></i>
+            </div>
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div id="userMenu" class="dropdown-menu">
+            <div class="menu-header">
+                <div id="userEmail" class="user-email"></div>
+                <div id="userStatus" class="user-status"></div>
+            </div>
+
+            <div class="menu-buttons">
+                <button id="upgradeBtn" onclick="upgradeToPremium()" class="menu-btn upgrade-btn" style="display: none;">
+                    <i class="fas fa-crown"></i>Get Premium
+                </button>
+                <button onclick="logout()" class="menu-btn logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm" class="login-form">
+        <h2 class="login-title">Login to Access PRO Signals</h2>
+        <input type="email" id="email" placeholder="Email" class="login-input">
+        <input type="password" id="password" placeholder="Password" class="login-input">
+        <button onclick="login()" class="login-btn">Login</button>
+        <button onclick="register()" class="register-btn">Register (Get 5 Free Coins)</button>
+        <div id="authMessage" class="auth-message"></div>
+    </div>
+
+    <div id="mainContent" style="display: none; padding-top: 20px;">
+        <div class="h1" style="font-size: 20px">
+            <script type="text/javascript">
+            farbbibliothek = new Array();
+            farbbibliothek[0] = new Array("#FF0000","#FF1100","#FF2200","#FF3300","#FF4400","#FF5500","#FF6600","#FF7700","#FF8800","#FF9900","#FFaa00","#FFbb00","#FFcc00","#FFdd00","#FFee00","#FFff00","#FFee00","#FFdd00","#FFcc00","#FFbb00","#FFaa00","#FF9900","#FF8800","#FF7700","#FF6600","#FF5500","#FF4400","#FF3300","#FF2200","#FF1100");
+            farbbibliothek[1] = new Array("#00FF00","#000000","#00FF00","#00FF00");
+            farbbibliothek[2] = new Array("#00FF00","#FF0000","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00");
+            farbbibliothek[3] = new Array("#FF0000","#FF4000","#FF8000","#FFC000","#FFFF00","#C0FF00","#80FF00","#40FF00","#00FF00","#00FF40","#00FF80","#00FFC0","#00FFFF","#00C0FF","#0080FF","#0040FF","#0000FF","#4000FF","#8000FF","#C000FF","#FF00FF","#FF00C0","#FF0080","#FF0040");
+            farbbibliothek[4] = new Array("#FF0000","#EE0000","#DD0000","#CC0000","#BB0000","#AA0000","#990000","#880000","#770000","#660000","#550000","#440000","#330000","#220000","#110000","#000000","#110000","#220000","#330000","#440000","#550000","#660000","#770000","#880000","#990000","#AA0000","#BB0000","#CC0000","#DD0000","#EE0000");
+            farbbibliothek[5] = new Array("#000000","#000000","#000000","#FFFFFF","#FFFFFF","#FFFFFF");
+            farbbibliothek[6] = new Array("#0000FF","#FFFF00");
+            farben = farbbibliothek[4];
+            function farbschrift(){for(var b=0;b<Buchstabe.length;b++){document.all["a"+b].style.color=farben[b]}farbverlauf()}function string2array(b){Buchstabe=new Array();while(farben.length<b.length){farben=farben.concat(farben)}k=0;while(k<=b.length){Buchstabe[k]=b.charAt(k);k++}}function divserzeugen(){for(var b=0;b<Buchstabe.length;b++){document.write("<span id='a"+b+"' class='a"+b+"'>"+Buchstabe[b]+"</span>")}farbschrift()}var a=1;function farbverlauf(){for(var b=0;b<farben.length;b++){farben[b-1]=farben[b]}farben[farben.length-1]=farben[-1];setTimeout("farbschrift()",30)}var farbsatz=1;function farbtauscher(){farben=farbbibliothek[farbsatz];while(farben.length<text.length){farben=farben.concat(farben)}farbsatz=Math.floor(Math.random()*(farbbibliothek.length-0.0001))}setInterval("farbtauscher()",5000);
+
+            text= "♛ GOLDEN EAGLE PRO ♛"; 
+            string2array(text);
+            divserzeugen();
+            </script>
+        </div>
+        <h4>© Powered by SECRET SOLUTION YT</h4>
+
+        <form id="signalForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="pairname"><i class="fas fa-coins"></i> Currency Pair</label>
+                    <select id="pairname">
+                        <option value="USDJPY">USD/JPY</option>
+                        <option value="EURUSD">EUR/USD</option>
+                        <option value="GBPUSD">GBP/USD</option>
+                        <option value="USDCAD">USD/CAD</option>
+                        <option value="AUDUSD">AUD/USD</option>
+                        <option value="NZDUSD">NZD/USD</option>
+                        <option value="USDCHF">USD/CHF</option>
+                        <option value="EURJPY">EUR/JPY</option>
+                        <option value="GBPJPY">GBP/JPY</option>
+                        <option value="AUDJPY">AUD/JPY</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="startTime"><i class="fas fa-clock"></i> Start Time</label>
+                    <input type="time" id="startTime" value="00:00">
+                </div>
+
+                <div class="form-group">
+                    <label for="endTime"><i class="fas fa-clock"></i> End Time</label>
+                    <input type="time" id="endTime" value="23:59">
+                </div>
+
+                <div class="form-group">
+                    <label for="timeframe"><i class="fas fa-hourglass-half"></i> Timeframe</label>
+                    <select id="timeframe">
+                        <option value="M1">1 Minute</option>
+                        <option value="M5">5 Minutes</option>
+                        <option value="M15">15 Minutes</option>
+                        <option value="M30">30 Minutes</option>
+                        <option value="H1">1 Hour</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="direction"><i class="fas fa-arrows-alt-v"></i> Direction</label>
+                    <select id="direction">
+                        <option value="BOTH">Both</option>
+                        <option value="UP">Up Only</option>
+                        <option value="DOWN">Down Only</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="percentage"><i class="fas fa-percentage"></i> Accuracy %</label>
+                    <input type="number" id="percentage" value="90" min="50" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="daysanalyze"><i class="fas fa-calendar-alt"></i> Days to Analyze</label>
+                    <input type="number" id="daysanalyze" value="19" min="1" max="30">
+                </div>
+
+                <div class="form-group">
+                    <label for="timezone"><i class="fas fa-globe"></i> Timezone</label>
+                    <select id="timezone">
+                        <option value="Asia/Kolkata">Asia/Kolkata</option>
+                        <option value="America/New_York">America/New_York</option>
+                        <option value="Europe/London">Europe/London</option>
+                        <option value="Asia/Tokyo">Asia/Tokyo</option>
+                        <option value="Australia/Sydney">Australia/Sydney</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-rocket"></i> Generate VIP Signals
+            </button>
+        </form>
+
+        <div id="loader"><span></span><span></span><span></span></div>
+
+        <div id="results">
+            <button onclick="copySignals()" id="copyBtn" class="btn" style="display:none;">
+                <i class="fas fa-copy"></i> Copy Signals
+            </button>
+            <table id="signalsTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Currency Pair</th>
+                        <th>Entry Time</th>
+                        <th>Direction</th>
+                        <th>Movement</th>
+                        <th>Timeframe</th>
+                    </tr>
+                </thead>
+                <tbody id="signalsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="customAlert" class="custom-alert"></div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9oOgsN0IE5vw48dnp1n4SykPSQsL8lSw",
+            authDomain: "sakibin-75f62.firebaseapp.com",
+            projectId: "sakibin-75f62",
+            storageBucket: "sakibin-75f62.appspot.com",
+            messagingSenderId: "732867500543",
+            appId: "1:732867500543:web:96df65624c7897c106efca",
+            measurementId: "G-BGGNPS1N1X"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        let currentUser = null;
+        let userToken = null;
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('userMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const avatar = document.getElementById('userAvatar');
+            const menu = document.getElementById('userMenu');
+            if (!avatar.contains(event.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        // Authentication functions
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                showAuthMessage('Login successful!', 'success');
+            } catch (error) {
+                showAuthMessage(error.message, 'error');
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                showAuthMessage('Registration successful! You got 20 free coins!', 'success');
+            } catch (error) {
+                showAuthMessage(error.message, 'error');
+            }
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        function showAuthMessage(message, type) {
+            const messageEl = document.getElementById('authMessage');
+            messageEl.textContent = message;
+            messageEl.style.color = type === 'success' ? '#00ff99' : '#ff4444';
+        }
+
+        function upgradeToPremium() {
+            const telegramUrl = 'https://t.me/yourtelegramusername';
+            window.open(telegramUrl, '_blank');
+            showAlert('Redirecting to Telegram for Premium upgrade...');
+        }
+
+        function goToOTCMarket() {
+            window.location.href = '/';
+        }
+
+        async function updateUserInfo() {
+            if (!userToken) return;
+
+            try {
+                const response = await fetch('/api/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    document.getElementById('userEmail').textContent = currentUser.email;
+                    document.getElementById('userStatus').textContent = userData.isPremium ? 'PREMIUM USER' : 'FREE USER';
+                    document.getElementById('coinCount').textContent = userData.isPremium ? '∞ Coins' : `${userData.coins} Coins`;
+                    document.getElementById('upgradeBtn').style.display = userData.isPremium ? 'none' : 'inline-block';
+
+                    // Show OTC Market button only for premium users
+                    document.getElementById('otcMarketBtn').style.display = userData.isPremium ? 'block' : 'none';
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        }
+
+        // Auth state observer
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                userToken = await user.getIdToken();
+
+                try {
+                    const response = await fetch('/verifyToken', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ token: userToken })
+                    });
+
+                    if (response.ok) {
+                        document.getElementById('loginForm').style.display = 'none';
+                        document.getElementById('userAvatar').style.display = 'block';
+                        document.getElementById('pageSwitcher').style.display = 'block';
+                        document.getElementById('mainContent').style.display = 'block';
+                        await updateUserInfo();
+                    }
+                } catch (error) {
+                    console.error('Error verifying token:', error);
+                }
+            } else {
+                currentUser = null;
+                userToken = null;
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('userAvatar').style.display = 'none';
+                document.getElementById('pageSwitcher').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'none';
+                document.getElementById('otcMarketBtn').style.display = 'none';
+            }
+        });
+
+        function showAlert(message, duration = 3000) {
+            const alertBox = document.getElementById("customAlert");
+            alertBox.textContent = message;
+            alertBox.classList.add("show");
+            setTimeout(() => alertBox.classList.remove("show"), duration);
+        }
+
+        document.getElementById("signalForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const loader = document.getElementById("loader");
+            loader.style.display = "block";
+
+            setTimeout(() => {
+                loader.style.display = "none";
+
+                const pairname = document.getElementById("pairname").value;
+                const startTime = document.getElementById("startTime").value;
+                const endTime = document.getElementById("endTime").value;
+                const timeframe = document.getElementById("timeframe").value;
+                const direction = document.getElementById("direction").value;
+                const percentage = document.getElementById("percentage").value;
+                const daysanalyze = document.getElementById("daysanalyze").value;
+                const timezone = document.getElementById("timezone").value;
+
+                const apiUrl = `/api/hr-signals?pairname=${pairname}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&timeframe=${timeframe}&direction=${direction}&percentage=${percentage}&daysanalyze=${daysanalyze}&timezone=${encodeURIComponent(timezone)}`;
+
+                axios.get(apiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${userToken}`
+                    }
+                })
+                .then(response => {
+                    const data = response.data;
+                    const signals = data.signals;
+                    const tbody = document.getElementById("signalsBody");
+                    tbody.innerHTML = "";
+
+                    if (signals.length > 0) {
+                        signals.forEach(signal => {
+                            const tr = document.createElement("tr");
+                            tr.innerHTML = `
+                                <td>${signal.asset}</td>
+                                <td>${signal.entry_time}</td>
+                                <td class='${signal.main_direction}'>${signal.main_direction.toUpperCase()}</td>
+                                <td>${signal.movement}</td>
+                                <td>${signal.candle_time}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                        document.getElementById("signalsTable").style.display = "table";
+                        document.getElementById("copyBtn").style.display = "block";
+
+                        // Update coin count
+                        if (!data.isPremium) {
+                            document.getElementById('coinCount').textContent = `${data.userCoins} Coins`;
+                            if (data.userCoins <= 0) {
+                                showAlert("You've used all your free coins! Upgrade to Premium for unlimited signals.");
+                            }
+                        }
+                    } else {
+                        showAlert("No signals found for the selected parameters.");
+                    }
+                })
+                .catch(error => {
+                    if (error.response?.status === 403) {
+                        showAlert("Insufficient coins! Upgrade to Premium for unlimited signals.");
+                    } else if (error.response?.status === 401) {
+                        showAlert("Please login to access signals.");
+                    } else {
+                        showAlert("Error fetching PRIME trading signals.");
+                    }
+                });
+
+            }, 3000);
+        });
+
+        function copySignals() {
+            let header = `🚀 Golden Eagle Signals\n⏳ Timeframe: ${document.getElementById('timeframe').value}\n💎 Accuracy: ${document.getElementById('percentage').value}%\n\n`;
+            let signalLines = "";
+            document.querySelectorAll("#signalsBody tr").forEach(row => {
+                const cells = row.querySelectorAll("td");
+                const pair = cells[0].innerText.trim();
+                const time = cells[1].innerText.trim();
+                const direction = cells[2].innerText.trim().toUpperCase();
+                const movement = cells[3].innerText.trim();
+                signalLines += `⚡${pair}\t${time}\t${direction}\t📊${movement}\n`;
+            });
+            const finalText = header + signalLines;
+            navigator.clipboard.writeText(finalText).then(() => showAlert("PRIME Trading signals copied!"));
+        }
+    </script>
+</body>
+</html>

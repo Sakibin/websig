@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sakibin GPT</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
+  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/dbc9d516d6.js" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg-dark: #0d0d0d;
+      --bg-card: #1a1a1a;
+      --text-light: #ffffff;
+      --gold: #d4af37;
+      --highlight: #ffcc00;
+      --accent: #ffae00;
+      --border-dark: #333;
+      --blue-glow: #007bff;
+    }
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+    }
+    .h1 {
+      text-align: center;
+      font-size: 2rem;
+      color: var(--gold);
+      font-weight: 1rem;
+      margin-top: 1rem;
+      margin-bottom: 2rem;
+    }
+    .chat-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      border: 1px solid var(--gold);
+      display: flex;
+      flex-direction: column;
+      min-height: 70vh;
+      padding: 0;
+    }
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-dark);
+      background: var(--bg-card);
+      border-radius: 16px 16px 0 0;
+    }
+    .chat-header h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+    .menu-icon, .share-icon {
+      font-size: 22px;
+      color: var(--gold);
+    }
+    .chat-messages {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 24px;
+      background: var(--bg-card);
+    }
+    .message {
+      max-width: 80%;
+      margin-bottom: 20px;
+      clear: both;
+      word-break: break-word;
+    }
+    .user-message {
+      float: right;
+      background: linear-gradient(45deg, var(--gold), var(--accent));
+      color: var(--bg-dark);
+      padding: 12px 18px;
+      border-radius: 20px 20px 4px 20px;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(212,175,55,0.08);
+    }
+    .ai-message {
+      float: left;
+      background: var(--bg-dark);
+      color: var(--gold);
+      padding: 12px 18px;
+      border-radius: 20px 20px 20px 4px;
+      border: 1px solid var(--gold);
+      box-shadow: 0 2px 8px rgba(212,175,55,0.08);
+      position: relative;
+    }
+    .ai-icon {
+      width: 30px;
+      height: 30px;
+      background-image: url('https://i.ibb.co/rKrQHf7f/New-Project-43-52511-DF.png');
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 10px;
+      vertical-align: middle;
+      border: 2px solid var(--gold);
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .action-button {
+      font-size: 15px;
+      color: var(--gold);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .action-button:hover {
+      color: var(--highlight);
+    }
+    .chat-input {
+      display: flex;
+      padding: 18px 24px;
+      border-top: 1px solid var(--border-dark);
+      background: var(--bg-card);
+      border-radius: 0 0 16px 16px;
+    }
+    .chat-input input {
+      color: var(--gold);
+      flex-grow: 1;
+      padding: 12px 18px;
+      border: 1px solid var(--gold);
+      border-radius: 20px;
+      margin-right: 10px;
+      background: var(--bg-dark);
+      font-size: 1rem;
+    }
+    .chat-input input:focus {
+      outline: none;
+      border-color: var(--highlight);
+      box-shadow: 0 0 10px var(--gold);
+    }
+    .chat-input button {
+      background: linear-gradient(45deg, var(--gold), var(--accent));
+      border: none;
+      font-size: 24px;
+      color: var(--bg-dark);
+      cursor: pointer;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: filter 0.2s;
+    }
+    .chat-input button:hover {
+      filter: brightness(1.1);
+    }
+    .disclaimer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--highlight);
+      padding: 10px;
+      margin-top: 10px;
+    }
+    .custom-alert {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--bg-card);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      box-shadow: 0 0 10px var(--gold);
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      font-weight: bold;
+      z-index: 9999;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .custom-alert.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 0.5rem;
+      }
+      .chat-container {
+        min-height: 90vh;
+      }
+      .chat-header {
+        padding: 12px 10px;
+      }
+      .chat-messages {
+        padding: 10px;
+      }
+      .chat-input {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      <span class="menu-icon"><i class="fas fa-bars"></i></span>
+      <h1>Eagle A.i</h1>
+      <span class="share-icon"><i class="fas fa-share-alt"></i></span>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+ 
+      <div class="message ai-message">
+        <span class="ai-icon"></span>
+        Hello! How can I assist you today?
+        <div class="action-buttons">
+          <button class="action-button copy-button"><i class="fa-solid fa-copy"></i></button>
+          <button class="action-button"><i class="fas fa-thumbs-up"></i></button>
+          <button class="action-button"><i class="fas fa-sync-alt"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="userInput" placeholder="Message Chatbot">
+      <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+    <div class="disclaimer">
+      Chatbot can make mistakes. Check important info.
+    </div>
+  </div>
+  <div id="customAlert" class="custom-alert"></div>
+  <script>
+    async function sendMessage() {
+      const userInput = document.getElementById('userInput');
+      const chatMessages = document.getElementById('chatMessages');
+      if (userInput.value.trim() !== '') {
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message user-message';
+        userMessage.textContent = userInput.value;
+        chatMessages.appendChild(userMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        const prompt = userInput.value;
+        userInput.value = '';
+        try {
+          // Use a unique senderID for each user if available, fallback to 'webuser'
+          let uid = 'webuser';
+          if (window.currentUser && window.currentUser.uid) {
+            uid = window.currentUser.uid;
+          }
+          const response = await fetch(`/gptgo?prompt=${encodeURIComponent(prompt)}&uid=${encodeURIComponent(uid)}`, {
+            method: 'GET',
+          });
+          const data = await response.json();
+          if (data.status) {
+            const aiMessage = document.createElement('div');
+            aiMessage.className = 'message ai-message';
+            aiMessage.innerHTML = `
+              <span class="ai-icon"></span>
+              ${data.gpt}
+              <div class="action-buttons">
+                <button class="action-button copy-button"><i class="fa-solid fa-copy"></i></button>
+                <button class="action-button"><i class="fas fa-thumbs-up"></i></button>
+                <button class="action-button"><i class="fas fa-sync-alt"></i></button>
+              </div>
+            `;
+            chatMessages.appendChild(aiMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            aiMessage.querySelector('.copy-button').addEventListener('click', function () {
+              copyToClipboard(data.gpt, this);
+            });
+          } else {
+            showAlert('Failed to get a response from the server.');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          showAlert('Error communicating with the server.');
+        }
+      }
+    }
+    function copyToClipboard(text, buttonElement) {
+      navigator.clipboard.writeText(text).then(() => {
+        buttonElement.innerHTML = '<i class="fa-solid fa-check"></i>';
+      }).catch(err => {
+        console.error('Error copying text: ', err);
+      });
+    }
+    document.getElementById('userInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    function showAlert(message, duration = 3000) {
+      const alertBox = document.getElementById("customAlert");
+      alertBox.textContent = message;
+      alertBox.classList.add("show");
+      setTimeout(() => alertBox.classList.remove("show"), duration);
+    }
+  </script>
+</body>
+</html>
