@@ -30,7 +30,7 @@ admin.initializeApp({
 
 
 const app = express();
-const port = 3000;
+const port = 6000;
 
 // Simple in-memory user store (in production, use a database)
 const users = new Map();
@@ -144,8 +144,8 @@ app.get("/api/signal", async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Check if user has enough coins or is premium
-    if (!userData.isPremium && userData.coins <= 0) {
+    // Check if user has enough coins (premium or not)
+    if (userData.coins <= 0) {
       return res.status(403).json({ 
         error: 'Insufficient coins', 
         coins: userData.coins,
@@ -180,13 +180,11 @@ app.get("/api/signal", async (req, res) => {
       }))
     };
 
-    // Deduct coin for non-premium users
-    if (!userData.isPremium) {
-      userData.coins -= 1;
-      userData.signalsUsed += 1;
-      users.set(userId, userData);
-      saveUsersToFile(); // Save changes to file
-    }
+    // Deduct coin for all users (premium and free)
+    userData.coins -= 1;
+    userData.signalsUsed += 1;
+    users.set(userId, userData);
+    saveUsersToFile(); // Save changes to file
 
     res.json({
       ...formattedResponse,
@@ -591,8 +589,8 @@ app.get("/api/hr-signals", async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Check if user has enough coins or is premium
-    if (!userData.isPremium && userData.coins <= 0) {
+    // Check if user has enough coins (premium or not)
+    if (userData.coins <= 0) {
       return res.status(403).json({ 
         error: 'Insufficient coins', 
         coins: userData.coins,
@@ -634,13 +632,11 @@ app.get("/api/hr-signals", async (req, res) => {
       }))
     };
 
-    // Deduct coin for non-premium users
-    if (!userData.isPremium) {
-      userData.coins -= 1;
-      userData.signalsUsed += 1;
-      users.set(userId, userData);
-      saveUsersToFile(); // Save changes to file
-    }
+    // Deduct coin for all users (premium and free)
+    userData.coins -= 1;
+    userData.signalsUsed += 1;
+    users.set(userId, userData);
+    saveUsersToFile(); // Save changes to file
 
     res.json({
       ...formattedResponse,
@@ -653,6 +649,98 @@ app.get("/api/hr-signals", async (req, res) => {
   }
 });
 
+// --- Chat System ---
+
+// Helper: Ensure chat array exists for user
+function ensureUserChat(userId) {
+  const user = users.get(userId);
+  if (user && !user.chat) {
+    user.chat = [];
+    users.set(userId, user);
+    saveUsersToFile();
+  }
+}
+
+// User sends message
+app.post('/api/chat/send', async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message required' });
+
+    ensureUserChat(userId);
+    const user = users.get(userId);
+    user.chat.push({ from: 'user', text: message, time: Date.now() });
+    users.set(userId, user);
+    saveUsersToFile();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// User fetches chat
+app.get('/api/chat/history', async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+    ensureUserChat(userId);
+    const user = users.get(userId);
+    res.json({ chat: user.chat || [] });
+  } catch (e) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// Admin fetches all chats
+app.get('/api/admin/chats', (req, res) => {
+  const password = req.query.pass;
+  if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
+
+  const chats = [];
+  users.forEach((user, userId) => {
+    if (user.chat && user.chat.length > 0) {
+      chats.push({
+        userId,
+        email: user.email,
+        chat: user.chat
+      });
+    }
+  });
+  res.json(chats);
+});
+
+// Admin replies to user
+app.post('/api/admin/chat/reply', (req, res) => {
+  const password = req.query.pass;
+  if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
+
+  const { userId, message } = req.body;
+  if (!userId || !message) return res.status(400).json({ error: 'Missing userId or message' });
+
+  if (users.has(userId)) {
+    ensureUserChat(userId);
+    const user = users.get(userId);
+    user.chat.push({ from: 'admin', text: message, time: Date.now() });
+    users.set(userId, user);
+    saveUsersToFile();
+    res.json({ success: true });
+  } else {
+    res.status(404).json({ error: 'User not found' });
+  }
+});
+
+// Start the server
+///app.listen(port, () => {
+ ///console.log(`Server running on http://localhost:${port}`);
+//});
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

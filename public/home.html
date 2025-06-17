@@ -355,7 +355,8 @@
     text= "♛ Golden Eagle ♛"; 
     string2array(text);
     divserzeugen();
-    </script></div>
+    </script>
+    </div> 
 <h4>© Powered by SECRET SOLUTION YT</h4>
 
       <!-- Centered Navigation Buttons -->      <div id="centerNavBtns" style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 16px 0;">
@@ -544,7 +545,7 @@
             const userData = await response.json();
             document.getElementById('userEmail').textContent = currentUser.email;
             document.getElementById('userStatus').textContent = userData.isPremium ? 'PREMIUM USER' : 'FREE USER';
-            document.getElementById('coinCount').textContent = userData.isPremium ? '∞ Coins' : `${userData.coins} Coins`;
+            document.getElementById('coinCount').textContent = `${userData.coins} Coins`;
             document.getElementById('upgradeBtn').style.display = userData.isPremium ? 'none' : 'inline-block';
 
             // Show/hide center navigation buttons
@@ -730,11 +731,9 @@
                 document.getElementById("copyBtn").style.display = "block";
 
                 // Update coin count
-                if (!data.isPremium) {
-                  document.getElementById('coinCount').textContent = `${data.userCoins} Coins`;
-                  if (data.userCoins <= 0) {
-                    showAlert("You've used all your free coins! Upgrade to Premium for unlimited signals.");
-                  }
+                document.getElementById('coinCount').textContent = `${data.userCoins} Coins`;
+                if (data.userCoins <= 0) {
+                  showAlert("You've used all your coins! Upgrade to Premium or ask admin for more coins.");
                 }
               } else {
                 showAlert("No signals found.");
