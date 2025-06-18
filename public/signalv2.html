@@ -665,7 +665,7 @@
                     const userData = await response.json();
                     document.getElementById('userEmail').textContent = currentUser.email;
                     document.getElementById('userStatus').textContent = userData.isPremium ? 'PREMIUM USER' : 'FREE USER';
-                    document.getElementById('coinCount').textContent = userData.isPremium ? '∞ Coins' : `${userData.coins} Coins`;
+                    document.getElementById('coinCount').textContent = `${userData.coins} Coins`;
                     document.getElementById('upgradeBtn').style.display = userData.isPremium ? 'none' : 'inline-block';
 
                     // Show OTC Market button only for premium users
@@ -766,11 +766,9 @@
                         document.getElementById("copyBtn").style.display = "block";
 
                         // Update coin count
-                        if (!data.isPremium) {
-                            document.getElementById('coinCount').textContent = `${data.userCoins} Coins`;
-                            if (data.userCoins <= 0) {
-                                showAlert("You've used all your free coins! Upgrade to Premium for unlimited signals.");
-                            }
+                        document.getElementById('coinCount').textContent = `${data.userCoins} Coins`;
+                        if (data.userCoins <= 0) {
+                            showAlert("You've used all your coins! Upgrade to Premium or ask admin for more coins.");
                         }
                     } else {
                         showAlert("No signals found for the selected parameters.");
@@ -804,5 +802,7 @@
             navigator.clipboard.writeText(finalText).then(() => showAlert("PRIME Trading signals copied!"));
         }
     </script>
+</body>
+</html>
 </body>
 </html>
