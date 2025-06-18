@@ -35,6 +35,8 @@ const port = 6000;
 // Simple in-memory user store (in production, use a database)
 const users = new Map();
 const USERS_DB_PATH = path.join(__dirname, 'users.json');
+const CHAT_DIR = path.join(__dirname, 'chat');
+if (!fs.existsSync(CHAT_DIR)) fs.mkdirSync(CHAT_DIR);
 
 // Load users from JSON file
 function loadUsersFromFile() {
@@ -651,15 +653,6 @@ app.get("/api/hr-signals", async (req, res) => {
 
 // --- Live Chat System ---
 
-function ensureUserChat(userId) {
-  const user = users.get(userId);
-  if (user && !user.chat) {
-    user.chat = [];
-    users.set(userId, user);
-    saveUsersToFile();
-  }
-}
-
 // User sends message
 app.post('/api/chat/send', async (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
@@ -669,11 +662,9 @@ app.post('/api/chat/send', async (req, res) => {
     const userId = decodedToken.uid;
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });
-    ensureUserChat(userId);
-    const user = users.get(userId);
-    user.chat.push({ from: 'user', text: message, time: Date.now() });
-    users.set(userId, user);
-    saveUsersToFile();
+    const chatArr = readUserChat(userId);
+    chatArr.push({ from: 'user', text: message, time: Date.now() });
+    writeUserChat(userId, chatArr);
     res.json({ success: true });
   } catch {
     res.status(401).json({ error: 'Invalid token' });
@@ -687,9 +678,8 @@ app.get('/api/chat/history', async (req, res) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const userId = decodedToken.uid;
-    ensureUserChat(userId);
-    const user = users.get(userId);
-    res.json({ chat: user.chat || [] });
+    const chatArr = readUserChat(userId);
+    res.json({ chat: chatArr });
   } catch {
     res.status(401).json({ error: 'Invalid token' });
   }
@@ -701,11 +691,12 @@ app.get('/api/admin/chats', (req, res) => {
   if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
   const chats = [];
   users.forEach((user, userId) => {
-    if (user.chat && user.chat.length > 0) {
+    const chatArr = readUserChat(userId);
+    if (chatArr.length > 0) {
       chats.push({
         userId,
         email: user.email,
-        chat: user.chat
+        chat: chatArr
       });
     }
   });
@@ -719,11 +710,9 @@ app.post('/api/admin/chat/reply', (req, res) => {
   const { userId, message } = req.body;
   if (!userId || !message) return res.status(400).json({ error: 'Missing userId or message' });
   if (users.has(userId)) {
-    ensureUserChat(userId);
-    const user = users.get(userId);
-    user.chat.push({ from: 'admin', text: message, time: Date.now() });
-    users.set(userId, user);
-    saveUsersToFile();
+    const chatArr = readUserChat(userId);
+    chatArr.push({ from: 'admin', text: message, time: Date.now() });
+    writeUserChat(userId, chatArr);
     res.json({ success: true });
   } else {
     res.status(404).json({ error: 'User not found' });
