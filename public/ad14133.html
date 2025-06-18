@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -439,6 +438,11 @@
         </tbody>
       </table>
     </div>
+    
+    <div style="margin:40px 0;">
+      <h2 style="color:#ffcc00;">Live Chat (User Messages)</h2>
+      <div id="adminChatList" style="display:flex;gap:20px;flex-wrap:wrap;"></div>
+    </div>
   </div>
   
   <!-- Edit User Modal -->
@@ -720,8 +724,61 @@
       }
     }
     
-    // Load users on page load
+    // --- Admin Live Chat ---
+    async function loadAdminChats() {
+      const res = await fetch('/api/admin/chats?pass=SRFG566');
+      const chats = await res.json();
+      const list = document.getElementById('adminChatList');
+      list.innerHTML = '';
+      if (!Array.isArray(chats) || chats.length === 0) {
+        list.innerHTML = '<div style="color:#fff;">No user messages yet.</div>';
+        return;
+      }
+      chats.forEach(chatObj => {
+        const { userId, email, chat } = chatObj;
+        let html = `<div style="min-width:300px;max-width:400px;background:#1e2a4a;border-radius:10px;padding:12px 10px 10px 10px;margin-bottom:10px;border:1px solid #ffcc00;">
+          <div style="font-weight:bold;color:#ffcc00;">${email}</div>
+          <div style="height:120px;overflow-y:auto;background:#222;padding:6px 4px 6px 8px;border-radius:6px;margin:8px 0 8px 0;font-size:13px;">`;
+        chat.forEach(msg => {
+          const align = msg.from === 'admin' ? 'right' : 'left';
+          const color = msg.from === 'admin' ? '#ffcc00' : '#fff';
+          const bg = msg.from === 'admin' ? '#333' : '#444';
+          const who = msg.from === 'admin' ? 'Admin' : 'User';
+          const time = new Date(msg.time).toLocaleTimeString();
+          html += `<div style="text-align:${align};margin-bottom:3px;">
+            <span style="display:inline-block;background:${bg};color:${color};padding:3px 7px;border-radius:8px;max-width:80%;word-break:break-word;">
+              <b>${who}:</b> ${msg.text} <span style="font-size:10px;color:#aaa;">${time}</span>
+            </span>
+          </div>`;
+        });
+        html += `</div>
+          <form onsubmit="return adminReplyChat('${userId}', this)">
+            <input type="text" name="reply" placeholder="Reply..." style="width:70%;padding:5px;border-radius:6px;border:1px solid #ffcc00;background:#222;color:#ffcc00;" />
+            <button type="submit" style="background:#ffcc00;color:#222;border:none;border-radius:6px;padding:5px 12px;font-weight:bold;">Send</button>
+          </form>
+        </div>`;
+        list.innerHTML += html;
+      });
+    }
+
+    async function adminReplyChat(userId, form) {
+      const input = form.reply;
+      const msg = input.value.trim();
+      if (!msg) return false;
+      input.value = '';
+      await fetch('/api/admin/chat/reply?pass=SRFG566', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, message: msg })
+      });
+      loadAdminChats();
+      return false;
+    }
+
+    // Load users and chats on page load
     loadUsers();
+    loadAdminChats();
+    setInterval(loadAdminChats, 4000);
   </script>
 </body>
 </html>
