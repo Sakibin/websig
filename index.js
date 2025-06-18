@@ -38,6 +38,30 @@ const USERS_DB_PATH = path.join(__dirname, 'users.json');
 const CHAT_DIR = path.join(__dirname, 'chat');
 if (!fs.existsSync(CHAT_DIR)) fs.mkdirSync(CHAT_DIR);
 
+// Helper: Get chat file path for user (by email)
+function getChatFilePathByEmail(email) {
+  // Sanitize email for filename (allow @ and .)
+  return path.join(CHAT_DIR, `${email}.json`);
+}
+
+// Helper: Read chat for user (by email)
+function readUserChatByEmail(email) {
+  const file = getChatFilePathByEmail(email);
+  if (fs.existsSync(file)) {
+    try {
+      return JSON.parse(fs.readFileSync(file, 'utf-8'));
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+// Helper: Write chat for user (by email)
+function writeUserChatByEmail(email, chatArr) {
+  fs.writeFileSync(getChatFilePathByEmail(email), JSON.stringify(chatArr, null, 2), 'utf-8');
+}
+
 // Load users from JSON file
 function loadUsersFromFile() {
   if (fs.existsSync(USERS_DB_PATH)) {
@@ -383,12 +407,33 @@ app.post('/api/upgrade-premium', async (req, res) => {
 // Admin login page
 app.get('/admin', (req, res) => {
   const password = req.query.pass;
+  // Check for admin password OR adminrole in user data
   if (password === '14133504') {
     return res.sendFile(path.join(__dirname, 'public', 'ad14133.html'));
   }
 
+  // Check for Firebase token in Authorization header
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (token) {
+    admin.auth().verifyIdToken(token)
+      .then(decodedToken => {
+        const userId = decodedToken.uid;
+        const userData = users.get(userId);
+        if (userData && userData.adminrole === true) {
+          return res.sendFile(path.join(__dirname, 'public', 'ad14133.html'));
+        }
+        // Not admin, show login page
+        res.send(loginPage(password));
+      })
+      .catch(() => {
+        res.send(loginPage(password));
+      });
+    return;
+  }
+
   // Show password input page
-  const loginPage = `
+  function loginPage(password) {
+    return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -407,7 +452,6 @@ app.get('/admin', (req, res) => {
           min-height: 100vh;
           color: white;
         }
-
         .login-container {
           background: rgba(255, 255, 255, 0.1);
           backdrop-filter: blur(10px);
@@ -418,17 +462,14 @@ app.get('/admin', (req, res) => {
           text-align: center;
           min-width: 300px;
         }
-
         h1 {
           color: #ffcc00;
           margin-bottom: 30px;
           text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
-
         .input-group {
           margin-bottom: 20px;
         }
-
         input[type="password"] {
           width: 100%;
           padding: 15px;
@@ -439,17 +480,14 @@ app.get('/admin', (req, res) => {
           font-size: 16px;
           box-sizing: border-box;
         }
-
         input[type="password"]::placeholder {
           color: rgba(255, 255, 255, 0.6);
         }
-
         input[type="password"]:focus {
           outline: none;
           border-color: #ffcc00;
           box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
         }
-
         .btn {
           background: #ffcc00;
           color: #000;
@@ -462,18 +500,15 @@ app.get('/admin', (req, res) => {
           transition: all 0.3s;
           width: 100%;
         }
-
         .btn:hover {
           background: #ffaa00;
           transform: translateY(-2px);
         }
-
         .error {
           color: #ff4444;
           margin-top: 15px;
           font-size: 14px;
         }
-
         .icon {
           font-size: 48px;
           margin-bottom: 20px;
@@ -493,12 +528,8 @@ app.get('/admin', (req, res) => {
         </form>
         ${password ? '<div class="error">❌ Invalid password. Please try again.</div>' : ''}
       </div>
-
       <script>
-        // Focus on password input
         document.querySelector('input[type="password"]').focus();
-
-        // Add enter key support
         document.querySelector('input[type="password"]').addEventListener('keypress', function(e) {
           if (e.key === 'Enter') {
             document.querySelector('form').submit();
@@ -507,9 +538,10 @@ app.get('/admin', (req, res) => {
       </script>
     </body>
     </html>
-  `;
+    `;
+  }
 
-  res.send(loginPage);
+  res.send(loginPage(password));
 });
 
 // Get all users (admin only)
@@ -660,11 +692,13 @@ app.post('/api/chat/send', async (req, res) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const userId = decodedToken.uid;
+    const userData = users.get(userId);
+    if (!userData) return res.status(404).json({ error: 'User not found' });
     const { message } = req.body;
     if (!message) return res.status(400).json({ error: 'Message required' });
-    const chatArr = readUserChat(userId);
+    const chatArr = readUserChatByEmail(userData.email);
     chatArr.push({ from: 'user', text: message, time: Date.now() });
-    writeUserChat(userId, chatArr);
+    writeUserChatByEmail(userData.email, chatArr);
     res.json({ success: true });
   } catch {
     res.status(401).json({ error: 'Invalid token' });
@@ -678,7 +712,9 @@ app.get('/api/chat/history', async (req, res) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const userId = decodedToken.uid;
-    const chatArr = readUserChat(userId);
+    const userData = users.get(userId);
+    if (!userData) return res.status(404).json({ error: 'User not found' });
+    const chatArr = readUserChatByEmail(userData.email);
     res.json({ chat: chatArr });
   } catch {
     res.status(401).json({ error: 'Invalid token' });
@@ -691,7 +727,7 @@ app.get('/api/admin/chats', (req, res) => {
   if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
   const chats = [];
   users.forEach((user, userId) => {
-    const chatArr = readUserChat(userId);
+    const chatArr = readUserChatByEmail(user.email);
     if (chatArr.length > 0) {
       chats.push({
         userId,
@@ -710,9 +746,10 @@ app.post('/api/admin/chat/reply', (req, res) => {
   const { userId, message } = req.body;
   if (!userId || !message) return res.status(400).json({ error: 'Missing userId or message' });
   if (users.has(userId)) {
-    const chatArr = readUserChat(userId);
+    const userData = users.get(userId);
+    const chatArr = readUserChatByEmail(userData.email);
     chatArr.push({ from: 'admin', text: message, time: Date.now() });
-    writeUserChat(userId, chatArr);
+    writeUserChatByEmail(userData.email, chatArr);
     res.json({ success: true });
   } else {
     res.status(404).json({ error: 'User not found' });

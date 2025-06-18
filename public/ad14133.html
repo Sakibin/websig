@@ -469,13 +469,24 @@
         <button type="submit" class="btn">Update User</button>
         <button type="button" class="btn btn-danger" onclick="deleteUser()">Delete User</button>
       </form>
+      <!-- User Chat Section in Modal -->
+      <div id="userChatSection" style="margin-top:24px;">
+        <h3 style="color:#ffcc00;font-size:1.1em;margin-bottom:8px;">Live Chat with User</h3>
+        <div id="modalChatMessages" style="height:140px;overflow-y:auto;background:#222;padding:8px 4px 8px 8px;border-radius:6px;margin-bottom:10px;font-size:14px;"></div>
+        <form id="modalChatForm" style="display:flex;gap:6px;">
+          <input id="modalChatInput" type="text" placeholder="Type reply..." style="flex:1;padding:6px;border-radius:6px;border:1px solid #ffcc00;background:#181f2a;color:#ffcc00;" autocomplete="off" />
+          <button type="submit" style="background:#ffcc00;color:#222;border:none;border-radius:6px;padding:6px 12px;font-weight:bold;">Send</button>
+        </form>
+      </div>
     </div>
   </div>
   
   <script>
     let currentUserId = null;
     let notificationQueue = [];
-    
+    let modalChatUserId = null;
+    let modalChatPolling = null;
+
     // Notification System
     function showNotification(message, type = 'info', duration = 4000) {
       const container = document.getElementById('notificationContainer');
@@ -636,12 +647,60 @@
       document.getElementById('editStatus').value = isPremium.toString();
       document.getElementById('editModal').style.display = 'block';
       showNotification(`Editing user: ${email}`, 'info', 2000);
+      // Load chat for this user
+      modalChatUserId = userId;
+      loadModalChat();
+      if (modalChatPolling) clearInterval(modalChatPolling);
+      modalChatPolling = setInterval(loadModalChat, 2500);
     }
     
     function closeModal() {
       document.getElementById('editModal').style.display = 'none';
       currentUserId = null;
+      modalChatUserId = null;
+      if (modalChatPolling) clearInterval(modalChatPolling);
     }
+    
+    // --- Modal Chat Functions ---
+    async function loadModalChat() {
+      if (!modalChatUserId) return;
+      const res = await fetch('/api/admin/chats?pass=SRFG566');
+      const chats = await res.json();
+      const chatObj = Array.isArray(chats) ? chats.find(c => c.userId === modalChatUserId) : null;
+      const box = document.getElementById('modalChatMessages');
+      box.innerHTML = '';
+      if (!chatObj || !Array.isArray(chatObj.chat) || chatObj.chat.length === 0) {
+        box.innerHTML = '<div style="color:#aaa;">No messages yet.</div>';
+        return;
+      }
+      chatObj.chat.forEach(msg => {
+        const align = msg.from === 'admin' ? 'right' : 'left';
+        const color = msg.from === 'admin' ? '#ffcc00' : '#fff';
+        const bg = msg.from === 'admin' ? '#333' : '#444';
+        const who = msg.from === 'admin' ? 'Admin' : 'User';
+        const time = new Date(msg.time).toLocaleTimeString();
+        box.innerHTML += `<div style="text-align:${align};margin-bottom:3px;">
+          <span style="display:inline-block;background:${bg};color:${color};padding:3px 7px;border-radius:8px;max-width:80%;word-break:break-word;">
+            <b>${who}:</b> ${msg.text} <span style="font-size:10px;color:#aaa;">${time}</span>
+          </span>
+        </div>`;
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    document.getElementById('modalChatForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const input = document.getElementById('modalChatInput');
+      const msg = input.value.trim();
+      if (!msg || !modalChatUserId) return;
+      input.value = '';
+      await fetch('/api/admin/chat/reply?pass=SRFG566', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: modalChatUserId, message: msg })
+      });
+      loadModalChat();
+    });
     
     async function deleteUser() {
       if (!currentUserId) return;

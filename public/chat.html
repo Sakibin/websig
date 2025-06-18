@@ -123,19 +123,26 @@
       e.preventDefault();
       const input = document.getElementById('chatInput');
       const msg = input.value.trim();
-      if (!msg) return;
+      if (!msg || !userToken) return;
       input.value = '';
       document.getElementById('chatSend').disabled = true;
-      await fetch('/api/chat/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`
-        },
-        body: JSON.stringify({ message: msg })
-      });
+      try {
+        const res = await fetch('/api/chat/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userToken}`
+          },
+          body: JSON.stringify({ message: msg })
+        });
+        // Only fetch chat if sending was successful
+        if (res.ok) {
+          fetchChat();
+        }
+      } catch (err) {
+        // Optionally show error
+      }
       document.getElementById('chatSend').disabled = false;
-      fetchChat();
     });
 
     let chatPolling = null;
