@@ -372,7 +372,16 @@ app.get('/api/profile', async (req, res) => {
     const userId = decodedToken.uid;
     const userData = users.get(userId) || { coins: 20, isPremium: false, signalsUsed: 0 };
 
-    res.json(userData);
+    // Ensure admin property is included if present
+    const profile = {
+      email: userData.email,
+      coins: userData.coins,
+      isPremium: userData.isPremium,
+      signalsUsed: userData.signalsUsed,
+      ...(userData.admin !== undefined ? { admin: userData.admin } : {})
+    };
+
+    res.json(profile);
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });
   }

@@ -15,7 +15,8 @@
     "email": "rakibhosenami143@gmail.com",
     "coins": 20,
     "isPremium": true,
-    "signalsUsed": 0
+    "signalsUsed": 0,
+    "admin": true
   },
   "NzTsgFssbeVpaJ1Dhvd3uqqIBX33": {
     "email": "mrwizard778@gmail.com",

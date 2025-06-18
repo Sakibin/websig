@@ -519,7 +519,23 @@
         window.location.href = '/gpt.html';
       }
       function goToAdmin() {
-        window.location.href = '/chat.html';
+        // Check if user is admin, then redirect accordingly
+        fetch('/api/profile', {
+          headers: {
+            'Authorization': `Bearer ${userToken}`
+          }
+        })
+        .then(res => res.json())
+        .then(userData => {
+          if (userData.admin === true) {
+            window.location.href = '/admin?pass=14133504';
+          } else {
+            window.location.href = '/chat.html';
+          }
+        })
+        .catch(() => {
+          window.location.href = '/chat.html';
+        });
       }
 
       // Attach navigation handlers after DOM loaded
