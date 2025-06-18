@@ -20,8 +20,25 @@
   "NzTsgFssbeVpaJ1Dhvd3uqqIBX33": {
     "email": "mrwizard778@gmail.com",
     "coins": 5,
-    "isPremium": false,
-    "signalsUsed": 0
+    "isPremium": true,
+    "signalsUsed": 0,
+    "chat": [
+      {
+        "from": "user",
+        "text": "helo sir",
+        "time": 1750267183896
+      },
+      {
+        "from": "admin",
+        "text": "bolo",
+        "time": 1750267490904
+      },
+      {
+        "from": "admin",
+        "text": "bolo",
+        "time": 1750267526659
+      }
+    ]
   },
   "SHy6xht1YBY8bzkxL2jEzYLeG1z1": {
     "email": "wahidqu143@gmail.com",
