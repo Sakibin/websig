@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OTC Signal Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      padding: 20px;
+    }
+    input, select, button, textarea {
+      padding: 8px;
+      margin: 6px 0;
+      width: 100%;
+      max-width: 400px;
+      display: block;
+      border-radius: 4px;
+      border: none;
+    }
+    textarea {
+      height: 300px;
+    }
+    .highlight {
+      color: #00ffff;
+    }
+    .signal {
+      color: #00ff00;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 class="highlight">OTC Signal Generator</h2>
+
+  <label>See available assets?</label>
+  <button onclick="showAssets()">Show OTC Pairs</button>
+  <div id="assetList"></div>
+
+  <label>Enter Asset Name(s) or Index(es) (comma-separated):</label>
+  <input type="text" id="assetInput" placeholder="e.g., EURUSD-OTC or 14,15" />
+
+  <label>Start Time (HH:MM):</label>
+  <input type="time" id="startTime" />
+
+  <label>End Time (HH:MM):</label>
+  <input type="time" id="endTime" />
+
+  <label>Minimum Percentage (for future use):</label>
+  <input type="number" id="minPercentage" placeholder="e.g., 70" />
+
+  <button onclick="generateSignals()">Generate Signals</button>
+
+  <h3 class="highlight">Generated Signals:</h3>
+  <textarea id="output" readonly></textarea>
+
+  <script>
+    const otcPairs = [
+      "AUDCHF-OTC", "AUDJPY-OTC", "AUDUSD-OTC", "AUS200-OTC", "BCHUSD-OTC", "BNBUSD-OTC", "BTCUSD-OTC",
+      "DOTUSD-OTC", "ETHUSD-OTC", "EURAUD-OTC", "EURCAD-OTC", "EURGBP-OTC", "EURJPY-OTC", "EURUSD-OTC",
+      "FR40-OTC", "GBPAUD-OTC", "GBPCAD-OTC", "GBPCHF-OTC", "GBPUSD-OTC", "GER30-OTC", "HK33-OTC",
+      "J225-OTC", "NEARUSD-OTC", "NZDUSD-OTC", "SOLUSD-OTC", "SPN35-OTC", "TONUSD-OTC", "UK100-OTC",
+      "US100-OTC", "US2000-OTC", "US500-OTC", "USDBDT-OTC", "USDBRL-OTC", "USDCAD-OTC", "USDCHF-OTC",
+      "USDJPY-OTC", "USDX-OTC", "WIFUSD-OTC", "XAGUSD-OTC", "XAUUSD-OTC", "XBRUSD-OTC", "XNGUSD-OTC",
+      "XPDUSD-OTC", "XPTUSD-OTC", "XTIUSD-OTC"
+    ];
+
+    function showAssets() {
+      const container = document.getElementById("assetList");
+      container.innerHTML = "<strong>Available OTC Pairs:</strong><br><pre>" +
+        otcPairs.map((pair, i) => `${i + 1}. ${pair}`).join('\n') + "</pre>";
+    }
+
+    function generateSignals() {
+      const assetInput = document.getElementById("assetInput").value.trim();
+      const startTime = document.getElementById("startTime").value;
+      const endTime = document.getElementById("endTime").value;
+      const minPercentage = document.getElementById("minPercentage").value;
+
+      if (!startTime || !endTime) {
+        alert("Enter valid start and end times.");
+        return;
+      }
+
+      let selectedAssets = [];
+      if (/^\d+(,\d+)*$/.test(assetInput)) {
+        assetInput.split(',').forEach(num => {
+          const index = parseInt(num.trim()) - 1;
+          if (otcPairs[index]) selectedAssets.push(otcPairs[index]);
+        });
+      } else {
+        assetInput.split(',').forEach(name => {
+          const asset = name.trim().toUpperCase();
+          if (otcPairs.includes(asset)) selectedAssets.push(asset);
+        });
+      }
+
+      if (selectedAssets.length === 0) {
+        alert("No valid assets selected.");
+        return;
+      }
+
+      const [startHour, startMinute] = startTime.split(":").map(Number);
+      const [endHour, endMinute] = endTime.split(":").map(Number);
+
+      const start = new Date();
+      start.setHours(startHour, startMinute, 0);
+      const end = new Date();
+      end.setHours(endHour, endMinute, 0);
+      if (end <= start) end.setDate(end.getDate() + 1);
+
+      const minutesRange = (end - start) / (1000 * 60);
+      const hoursDiff = minutesRange / 60;
+
+      let totalSignals = 0;
+      if (hoursDiff <= 5) totalSignals = Math.floor(Math.random() * 11 + 10);
+      else if (hoursDiff <= 10) totalSignals = Math.floor(Math.random() * 11 + 20);
+      else totalSignals = Math.floor(Math.random() * 21 + 30);
+
+      const output = [];
+
+      for (let i = 0; i < totalSignals; i++) {
+        const asset = selectedAssets[Math.floor(Math.random() * selectedAssets.length)];
+        const signalOffset = Math.floor(Math.random() * minutesRange);
+        const signalTime = new Date(start.getTime() + signalOffset * 60000);
+        const hh = String(signalTime.getHours()).padStart(2, '0');
+        const mm = String(signalTime.getMinutes()).padStart(2, '0');
+        const hhmm = `${hh}:${mm}`;
+        const direction = Math.random() > 0.5 ? "PUT" : "BUY";
+        output.push({ time: hhmm, signal: `M1 ${asset} ${hhmm} ${direction}` });
+      }
+
+      output.sort((a, b) => a.time.localeCompare(b.time));
+      document.getElementById("output").value = output.map(sig => sig.signal).join("\n");
+    }
+  </script>
+</body>
+</html>
