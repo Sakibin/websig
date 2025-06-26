@@ -359,7 +359,8 @@
     </div>
 <h4>© Powered by SECRET SOLUTION YT</h4>
 
-      <!-- Centered Navigation Buttons -->      <div id="centerNavBtns" style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 16px 0;">
+      <!-- Centered Navigation Buttons -->      
+      <div id="centerNavBtns" style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 16px 0;">
         <button id="coinSignalBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
           <i class="fas fa-coins" style="margin-right: 8px;"></i> BASIC SIGNAL
         </button>
@@ -368,6 +369,9 @@
         </button>
         <button id="gptBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
           <i class="fas fa-robot" style="margin-right: 8px;"></i> GPT SIGNAL
+        </button>
+        <button id="binolaBtn" style="display:block; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
+          <i class="fas fa-dice" style="margin-right: 8px;"></i> BINOLA
         </button>
         <button id="getPremiumBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
           <i class="fas fa-crown" style="margin-right: 8px;"></i> GET PREMIUM
@@ -545,6 +549,9 @@
         document.getElementById('gptBtn').onclick = goToGPT;
         document.getElementById('getPremiumBtn').onclick = upgradeToPremium;
         document.getElementById('adminBtn').onclick = goToAdmin;
+        document.getElementById('binolaBtn').onclick = function() {
+          window.location.href = '/binola.html';
+        };
       });
 
       async function updateUserInfo() {
@@ -567,6 +574,7 @@
             // Show/hide center navigation buttons
             document.getElementById('coinSignalBtn').style.display = 'block';
             document.getElementById('adminBtn').style.display = 'block';
+            document.getElementById('binolaBtn').style.display = 'block'; // Always show BINOLA
             if (userData.isPremium) {
               document.getElementById('primeSignalsBtn').style.display = 'block';
               document.getElementById('gptBtn').style.display = 'block';
@@ -619,6 +627,7 @@
           document.getElementById('gptBtn').style.display = 'none';
           document.getElementById('getPremiumBtn').style.display = 'none';
           document.getElementById('adminBtn').style.display = 'none';
+          document.getElementById('binolaBtn').style.display = 'block'; // Always show BINOLA for not logged in too
         }
       });
 
