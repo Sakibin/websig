@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Live Chat with Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { background: #181f2a; color: #fff; font-family: 'Segoe UI',sans-serif; margin:0; padding:0; }
-    .chat-container { max-width: 420px; margin: 40px auto; background: #232b3b; border-radius: 10px; box-shadow: 0 4px 24px #0004; padding: 20px; }
-    .chat-header { font-size: 1.2em; color: #ffcc00; margin-bottom: 10px; }
-    #chatMessages { height: 260px; overflow-y: auto; background: #20293a; border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 15px; }
-    .msg { margin-bottom: 8px; }
-    .msg-user { text-align: left; }
-    .msg-admin { text-align: right; }
-    .msg-bubble { display: inline-block; padding: 7px 13px; border-radius: 16px; max-width: 80%; word-break: break-word; }
-    .bubble-user { background: #2d3a53; color: #fff; }
-    .bubble-admin { background: #ffcc00; color: #222; }
-    .msg-meta { font-size: 10px; color: #aaa; margin-left: 5px; }
-    #chatForm { display: flex; gap: 6px; }
-    #chatInput { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ffcc00; background: #181f2a; color: #ffcc00; }
-    #chatSend { background: #ffcc00; color: #222; border: none; border-radius: 8px; padding: 8px 18px; font-weight: bold; cursor: pointer; }
-    #chatSend:disabled { opacity: 0.5; }
-    .login-box { background: #232b3b; border-radius: 10px; padding: 20px; max-width: 340px; margin: 60px auto 0; text-align: center; }
-    .login-box input { width: 90%; margin-bottom: 10px; padding: 8px; border-radius: 6px; border: 1px solid #ffcc00; background: #181f2a; color: #ffcc00; }
-    .login-box button { background: #ffcc00; color: #222; border: none; border-radius: 6px; padding: 8px 18px; font-weight: bold; cursor: pointer; }
-    .status { margin-bottom: 10px; color: #ff4444; }
-  </style>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat with Admin</title>
+    <script src="https://kit.fontawesome.com/dbc9d516d6.js" crossorigin="anonymous"></script>
+    <style>
+      body { background: #181f2a; color: #ffcc00; font-family: 'Segoe UI',sans-serif; margin:0; padding:0; }
+      .chat-container { max-width: 420px; margin: 40px auto; background: #232b3b; border-radius: 10px; box-shadow: 0 4px 24px #0004; padding: 20px; }
+      .chat-header { font-size: 1.2em; color: #ffcc00; margin-bottom: 10px; }
+      #chatMessages { height: 260px; overflow-y: auto; background: #20293a; border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 15px; }
+      .msg { margin-bottom: 8px; }
+      .msg-user { text-align: left; }
+      .msg-admin { text-align: right; }
+      .msg-bubble { display: inline-block; padding: 7px 13px; border-radius: 16px; max-width: 80%; word-break: break-word; }
+      .bubble-user { background: #2d3a53; color: #fff; }
+      .bubble-admin { background: #ffcc00; color: #222; }
+      .msg-meta { font-size: 10px; color: #aaa; margin-left: 5px; }
+      #chatForm { display: flex; gap: 6px; }
+      #chatInput { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ffcc00; background: #181f2a; color: #ffcc00; }
+      #chatSend { background: #ffcc00; color: #222; border: none; border-radius: 8px; padding: 8px 18px; font-weight: bold; cursor: pointer; }
+      #chatSend:disabled { opacity: 0.5; }
+      .login-box { background: #232b3b; border-radius: 10px; padding: 20px; max-width: 340px; margin: 60px auto 0; text-align: center; }
+      .login-box input { width: 90%; margin-bottom: 10px; padding: 8px; border-radius: 6px; border: 1px solid #ffcc00; background: #181f2a; color: #ffcc00; }
+      .login-box button { background: #ffcc00; color: #222; border: none; border-radius: 6px; padding: 8px 18px; font-weight: bold; cursor: pointer; }
+      .status { margin-bottom: 10px; color: #ffcc00; }
+      input, button { background: #181f2a; color: #ffcc00; }
+      button { background: #ffcc00; color: #222; }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  </head>
 <body>
   <!-- Top Telegram Contact Buttons -->
   <div style="display:flex;gap:12px;justify-content:center;align-items:center;margin-top:18px;margin-bottom:18px;">

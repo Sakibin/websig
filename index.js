@@ -343,7 +343,7 @@ app.post('/verifyToken', async (req, res) => {
     const userId = decodedToken.uid;    if (!users.has(userId)) {
       users.set(userId, {
         email: decodedToken.email,
-        coins: 5,
+        coins: 20,
         isPremium: false,
         signalsUsed: 0
       });
