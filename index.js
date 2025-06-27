@@ -36,6 +36,7 @@ const port = 6000;
 const users = new Map();
 const USERS_DB_PATH = path.join(__dirname, 'users.json');
 const CHAT_DIR = path.join(__dirname, 'chat');
+const NOTIF_PATH = path.join(__dirname, 'notifications.json');
 if (!fs.existsSync(CHAT_DIR)) fs.mkdirSync(CHAT_DIR);
 
 // Helper: Get chat file path for user (by email)
@@ -89,6 +90,23 @@ function saveUsersToFile() {
 
 // Load users at startup
 loadUsersFromFile();
+
+// Helper: Load notifications
+function loadNotifications() {
+  if (fs.existsSync(NOTIF_PATH)) {
+    try {
+      return JSON.parse(fs.readFileSync(NOTIF_PATH, 'utf-8'));
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+// Helper: Save notifications
+function saveNotifications(list) {
+  fs.writeFileSync(NOTIF_PATH, JSON.stringify(list, null, 2), 'utf-8');
+}
 
 // Middleware
 app.use(bodyParser.json());
@@ -762,6 +780,45 @@ app.post('/api/admin/chat/reply', (req, res) => {
     res.json({ success: true });
   } else {
     res.status(404).json({ error: 'User not found' });
+  }
+});
+
+// --- Admin Notification API ---
+
+// Admin: Send notification
+app.post('/api/admin/notification', (req, res) => {
+  const password = req.query.pass;
+  if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
+  const { message } = req.body;
+  if (!message || typeof message !== 'string' || !message.trim()) {
+    return res.status(400).json({ error: 'Message required' });
+  }
+  const notifList = loadNotifications();
+  const notif = {
+    id: Date.now(),
+    message: message.trim(),
+    time: Date.now()
+  };
+  notifList.unshift(notif); // latest first
+  saveNotifications(notifList);
+  res.json({ success: true, notif });
+});
+
+// Admin: List notifications
+app.get('/api/admin/notification', (req, res) => {
+  const password = req.query.pass;
+  if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
+  const notifList = loadNotifications();
+  res.json(notifList);
+});
+
+// User: Get latest notification
+app.get('/api/notification', (req, res) => {
+  const notifList = loadNotifications();
+  if (notifList.length > 0) {
+    res.json({ id: notifList[0].id, message: notifList[0].message, time: notifList[0].time });
+  } else {
+    res.json({});
   }
 });
 

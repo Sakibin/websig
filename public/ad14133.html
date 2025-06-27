@@ -391,12 +391,28 @@
 <body>
   <button class="refresh-btn" onclick="loadUsers()">🔄 Refresh</button>
   
-  <!-- Notification Container -->
-  <div id="notificationContainer" class="notification-container"></div>
+  <!-- Admin Notification Bell -->
+  <button id="adminNotifBell" style="position:fixed;top:20px;right:70px;z-index:2001;background:transparent;border:none;cursor:pointer;">
+    <i class="fas fa-bell" style="font-size:28px;color:#ffcc00;"></i>
+  </button>
   
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-spinner"></div>
+  <!-- Admin Notification Modal -->
+  <div id="adminNotifModal" class="modal">
+    <div class="modal-content" style="max-width:420px;">
+      <span class="close" onclick="closeAdminNotifModal()">&times;</span>
+      <h2 style="color:#ffcc00;">Send Notification</h2>
+      <form id="adminNotifForm">
+        <div class="form-group">
+          <label>Notification Message:</label>
+          <textarea id="adminNotifMsg" rows="3" style="width:100%;padding:10px;border-radius:6px;border:1px solid #ffcc00;background:#181f2a;color:#ffcc00;" required></textarea>
+        </div>
+        <button type="submit" class="btn">Send Notification</button>
+      </form>
+      <div style="margin-top:18px;">
+        <h3 style="color:#ffcc00;font-size:1.1em;margin-bottom:8px;">Sent Notifications</h3>
+        <div id="adminNotifList" style="max-height:120px;overflow-y:auto;font-size:14px;background:#222;padding:8px;border-radius:6px;"></div>
+      </div>
+    </div>
   </div>
   
   <div class="container">
@@ -832,6 +848,57 @@
       });
       loadAdminChats();
       return false;
+    }
+
+    // --- Admin Notification System ---
+    document.getElementById('adminNotifBell').onclick = function() {
+      document.getElementById('adminNotifModal').style.display = 'block';
+      loadAdminNotifList();
+    };
+    function closeAdminNotifModal() {
+      document.getElementById('adminNotifModal').style.display = 'none';
+    }
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('adminNotifModal');
+      if (event.target === modal) closeAdminNotifModal();
+    });
+
+    // Send notification
+    document.getElementById('adminNotifForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const msg = document.getElementById('adminNotifMsg').value.trim();
+      if (!msg) return;
+      const btn = this.querySelector('button[type="submit"]');
+      setButtonLoading(btn, true);
+      try {
+        const res = await fetch('/api/admin/notification?pass=SRFG566', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        });
+        if (res.ok) {
+          showNotification('Notification sent!', 'success');
+          document.getElementById('adminNotifMsg').value = '';
+          loadAdminNotifList();
+        } else {
+          showNotification('Failed to send notification', 'error');
+        }
+      } finally {
+        setButtonLoading(btn, false);
+      }
+    });
+
+    // Load sent notifications
+    async function loadAdminNotifList() {
+      const res = await fetch('/api/admin/notification?pass=SRFG566');
+      const data = await res.json();
+      const list = document.getElementById('adminNotifList');
+      if (Array.isArray(data) && data.length > 0) {
+        list.innerHTML = data.map(n => `<div style="margin-bottom:6px;"><i class="fas fa-bell"></i> ${n.message} <span style="color:#aaa;font-size:11px;">(${new Date(n.time).toLocaleString()})</span></div>`).join('');
+      } else {
+        list.innerHTML = '<div style="color:#aaa;">No notifications sent yet.</div>';
+      }
     }
 
     // Load users and chats on page load
