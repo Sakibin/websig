@@ -358,6 +358,9 @@
         <button id="binolaBtn" style="display:block; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
           <i class="fas fa-dice" style="margin-right: 8px;"></i> BINOLA
         </button>
+        <button id="signalTestBtn" style="display:block; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
+          <i class="fas fa-vial" style="margin-right: 8px;"></i> SIGNAL TEST
+        </button>
         <button id="getPremiumBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
           <i class="fas fa-crown" style="margin-right: 8px;"></i> GET PREMIUM
         </button>
@@ -537,18 +540,19 @@
         document.getElementById('binolaBtn').onclick = function() {
           window.location.href = '/binola.html';
         };
+        document.getElementById('signalTestBtn').onclick = function() {
+          window.location.href = '/signaltest.html';
+        };
       });
 
       async function updateUserInfo() {
         if (!userToken) return;
-
         try {
           const response = await fetch('/api/profile', {
             headers: {
               'Authorization': `Bearer ${userToken}`
             }
           });
-
           if (response.ok) {
             const userData = await response.json();
             document.getElementById('userEmail').textContent = currentUser.email;
@@ -560,6 +564,7 @@
             document.getElementById('coinSignalBtn').style.display = 'block';
             document.getElementById('adminBtn').style.display = 'block';
             document.getElementById('binolaBtn').style.display = 'block'; // Always show BINOLA
+            document.getElementById('signalTestBtn').style.display = 'block'; // Always show SIGNAL TEST
             if (userData.isPremium) {
               document.getElementById('primeSignalsBtn').style.display = 'block';
               document.getElementById('gptBtn').style.display = 'block';
@@ -613,6 +618,7 @@
           document.getElementById('getPremiumBtn').style.display = 'none';
           document.getElementById('adminBtn').style.display = 'none';
           document.getElementById('binolaBtn').style.display = 'block'; // Always show BINOLA for not logged in too
+          document.getElementById('signalTestBtn').style.display = 'block'; // Always show SIGNAL TEST for not logged in too
         }
       });
 
