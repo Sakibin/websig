@@ -2,6 +2,7 @@
   {
     "id": 1718040000000,
     "message": "hello world",
-    "time": 1718040000000
+    "time": 1718040000000,
+    "type": "info"
   }
 ]

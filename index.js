@@ -789,7 +789,7 @@ app.post('/api/admin/chat/reply', (req, res) => {
 app.post('/api/admin/notification', (req, res) => {
   const password = req.query.pass;
   if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
-  const { message } = req.body;
+  const { message, type } = req.body;
   if (!message || typeof message !== 'string' || !message.trim()) {
     return res.status(400).json({ error: 'Message required' });
   }
@@ -797,7 +797,8 @@ app.post('/api/admin/notification', (req, res) => {
   const notif = {
     id: Date.now(),
     message: message.trim(),
-    time: Date.now()
+    time: Date.now(),
+    type: typeof type === 'string' ? type : 'info'
   };
   notifList.unshift(notif); // latest first
   saveNotifications(notifList);
@@ -816,7 +817,8 @@ app.get('/api/admin/notification', (req, res) => {
 app.get('/api/notification', (req, res) => {
   const notifList = loadNotifications();
   if (notifList.length > 0) {
-    res.json({ id: notifList[0].id, message: notifList[0].message, time: notifList[0].time });
+    const { id, message, time, type } = notifList[0];
+    res.json({ id, message, time, type: type || 'info' });
   } else {
     res.json({});
   }
