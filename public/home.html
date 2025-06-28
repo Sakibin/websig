@@ -611,30 +611,55 @@
 
       // --- Notification System ---
       let lastNotifId = null;
+      let currentNotif = null;
+
       function fetchAndShowNotification(autoShow = false) {
         fetch('/api/notification')
           .then(res => res.json())
           .then(data => {
             if (data && data.message) {
               lastNotifId = data.id || 1;
+              currentNotif = data;
               document.getElementById('notifMsg').textContent = data.message;
               document.getElementById('notifBell').style.display = 'block';
-              document.getElementById('notifDot').style.display = 'block';
+              // Only show dot if popup is not open
+              if (document.getElementById('notifPopup').style.display !== 'block') {
+                document.getElementById('notifDot').style.display = 'block';
+              }
               if (autoShow) showNotifPopup();
             } else {
+              lastNotifId = null;
+              currentNotif = null;
               document.getElementById('notifBell').style.display = 'none';
               closeNotifPopup();
             }
           });
       }
+
       function showNotifPopup() {
+        if (!currentNotif) return;
         document.getElementById('notifPopup').style.display = 'block';
         document.getElementById('notifDot').style.display = 'none';
       }
+
       function closeNotifPopup() {
         document.getElementById('notifPopup').style.display = 'none';
+        // If there is still a notification, show the dot again
+        if (currentNotif) {
+          document.getElementById('notifDot').style.display = 'block';
+        } else {
+          document.getElementById('notifDot').style.display = 'none';
+        }
       }
-      document.getElementById('notifBell').onclick = showNotifPopup;
+
+      document.getElementById('notifBell').onclick = function() {
+        if (currentNotif) showNotifPopup();
+      };
+
+      // Optionally, poll for new notifications every 60 seconds
+      setInterval(() => {
+        fetchAndShowNotification(false);
+      }, 60000);
 
       // --- After login, show notification if exists ---
       auth.onAuthStateChanged(async (user) => {
