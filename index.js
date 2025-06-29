@@ -770,7 +770,23 @@ app.get('/api/admin/chats', (req, res) => {
 app.post('/api/admin/chat/reply', (req, res) => {
   const password = req.query.pass;
   if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
-  const { userId, message } = req.body;
+
+  // Ensure body is parsed
+  let userId, message;
+  if (req.body && typeof req.body === 'object') {
+    userId = req.body.userId;
+    message = req.body.message;
+  } else {
+    // Try to parse if not already parsed
+    try {
+      const body = JSON.parse(req.body);
+      userId = body.userId;
+      message = body.message;
+    } catch {
+      return res.status(400).json({ error: 'Invalid JSON body' });
+    }
+  }
+
   if (!userId || !message) return res.status(400).json({ error: 'Missing userId or message' });
   if (users.has(userId)) {
     const userData = users.get(userId);
