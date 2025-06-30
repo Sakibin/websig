@@ -21,13 +21,12 @@
   "NzTsgFssbeVpaJ1Dhvd3uqqIBX33": {
     "email": "mrwizard778@gmail.com",
     "coins": 5,
-    "isPremium": true,
+    "isPremium": false,
     "signalsUsed": 0
-
   },
   "SHy6xht1YBY8bzkxL2jEzYLeG1z1": {
     "email": "wahidqu143@gmail.com",
-    "coins": 100000000000000000,
+    "coins": 1000,
     "isPremium": false,
     "signalsUsed": 2
   }
