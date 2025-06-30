@@ -402,6 +402,22 @@
   <div class="container">
     <h1>🛡️ Admin Panel - User Management</h1>
 
+    <!-- Notification Management Section -->
+    <div style="margin-bottom:32px;">
+      <h2 style="color:#ffcc00;">System Notification</h2>
+      <form id="notifForm" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input id="notifMsgInput" type="text" placeholder="Notification message..." style="flex:1;padding:10px;border-radius:6px;border:1px solid #ffcc00;background:#181f2a;color:#ffcc00;" autocomplete="off" />
+        <select id="notifTypeInput" style="padding:10px;border-radius:6px;border:1px solid #ffcc00;background:#181f2a;color:#ffcc00;">
+          <option value="info">Info</option>
+          <option value="success">Success</option>
+          <option value="warning">Warning</option>
+          <option value="error">Error</option>
+        </select>
+        <button type="submit" class="btn" style="min-width:120px;">Update Notification</button>
+      </form>
+      <div id="notifCurrent" style="margin-top:10px;color:#fff;font-size:1.05em;"></div>
+    </div>
+
     <div class="stats">
       <div class="stat-card">
         <div class="stat-value" id="totalUsers">0</div>
@@ -834,10 +850,54 @@
       return false;
     }
 
+    // --- Notification Management ---
+    async function loadCurrentNotification() {
+      const res = await fetch('/api/admin/notification?pass=SRFG566');
+      const notifs = await res.json();
+      if (Array.isArray(notifs) && notifs.length > 0) {
+        const notif = notifs[0];
+        document.getElementById('notifMsgInput').value = notif.message;
+        document.getElementById('notifTypeInput').value = notif.type || 'info';
+        document.getElementById('notifCurrent').innerHTML =
+          `<b>Current:</b> <span style="color:#ffcc00;">${notif.message}</span> <span style="background:#222;color:#fff;padding:2px 8px;border-radius:8px;margin-left:8px;">${notif.type || 'info'}</span>`;
+      } else {
+        document.getElementById('notifMsgInput').value = '';
+        document.getElementById('notifTypeInput').value = 'info';
+        document.getElementById('notifCurrent').innerHTML = '<i>No notification set.</i>';
+      }
+    }
+
+    document.getElementById('notifForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const msg = document.getElementById('notifMsgInput').value.trim();
+      const type = document.getElementById('notifTypeInput').value;
+      if (!msg) {
+        showNotification('Notification message required', 'warning');
+        return;
+      }
+      try {
+        const res = await fetch('/api/admin/notification?pass=SRFG566', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg, type })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showNotification('Notification updated!', 'success');
+          loadCurrentNotification();
+        } else {
+          showNotification('Error: ' + (data.error || 'Failed to update notification'), 'error');
+        }
+      } catch (err) {
+        showNotification('Network error updating notification', 'error');
+      }
+    });
+
     // Load users and chats on page load
     loadUsers();
     loadAdminChats();
     setInterval(loadAdminChats, 4000);
+    loadCurrentNotification();
   </script>
 </body>
 </html>
