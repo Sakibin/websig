@@ -169,15 +169,6 @@ app.get("/api/signal", async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Check if user has enough coins (premium or not)
-    if (userData.coins <= 0) {
-      return res.status(403).json({ 
-        error: 'Insufficient coins', 
-        coins: userData.coins,
-        isPremium: userData.isPremium 
-      });
-    }
-
     const {
       start,
       end,
@@ -185,6 +176,35 @@ app.get("/api/signal", async (req, res) => {
       currency_pairs,
       percentage_min = 90,
     } = req.query;
+
+    // --- BINOLA/OTC coin deduction logic ---
+    // List of OTC assets (should match binola.html)
+    const otcPairs = [
+      "AUDCHF-OTC", "AUDJPY-OTC", "AUDUSD-OTC", "AUS200-OTC", "BCHUSD-OTC", "BNBUSD-OTC", "BTCUSD-OTC",
+      "DOTUSD-OTC", "ETHUSD-OTC", "EURAUD-OTC", "EURCAD-OTC", "EURGBP-OTC", "EURJPY-OTC", "EURUSD-OTC",
+      "FR40-OTC", "GBPAUD-OTC", "GBPCAD-OTC", "GBPCHF-OTC", "GBPUSD-OTC", "GER30-OTC", "HK33-OTC",
+      "J225-OTC", "NEARUSD-OTC", "NZDUSD-OTC", "SOLUSD-OTC", "SPN35-OTC", "TONUSD-OTC", "UK100-OTC",
+      "US100-OTC", "US2000-OTC", "US500-OTC", "USDBDT-OTC", "USDBRL-OTC", "USDCAD-OTC", "USDCHF-OTC",
+      "USDJPY-OTC", "USDX-OTC", "WIFUSD-OTC", "XAGUSD-OTC", "XAUUSD-OTC", "XBRUSD-OTC", "XNGUSD-OTC",
+      "XPDUSD-OTC", "XPTUSD-OTC", "XTIUSD-OTC"
+    ];
+    let isBinola = false;
+    if (currency_pairs) {
+      const pairs = currency_pairs.split(',').map(s => s.trim().toUpperCase());
+      isBinola = pairs.some(pair =>
+        pair.endsWith('-OTC') || otcPairs.includes(pair)
+      );
+    }
+    const coinsToDeduct = isBinola ? 2 : 1;
+
+    // Check if user has enough coins (premium or not)
+    if (userData.coins < coinsToDeduct) {
+      return res.status(403).json({ 
+        error: 'Insufficient coins', 
+        coins: userData.coins,
+        isPremium: userData.isPremium 
+      });
+    }
 
     const apiUrl = `${BASE_API_URL}?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&duration=${encodeURIComponent(duration)}&currency_pairs=${encodeURIComponent(currency_pairs)}&operation_mode=normal&percentage_min=${percentage_min}&apply_filter=1&is_separate=1&backtest_advanced=off`;
 
@@ -206,7 +226,7 @@ app.get("/api/signal", async (req, res) => {
     };
 
     // Deduct coin for all users (premium and free)
-    userData.coins -= 1;
+    userData.coins -= coinsToDeduct;
     userData.signalsUsed += 1;
     users.set(userId, userData);
     saveUsersToFile(); // Save changes to file

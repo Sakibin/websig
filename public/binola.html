@@ -164,6 +164,10 @@
   <div class="container">
     <h2>OTC Signal Generator</h2>
 
+    <div id="coinBalance" style="margin-bottom:18px;font-weight:600;color:#ffcc00;text-align:right;">
+      Coins: <span id="coinValue">...</span>
+    </div>
+
     <label>See available assets?</label>
     <button class="btn-secondary" type="button" onclick="showAssets()">Show OTC Pairs</button>
     <div id="assetListModal" class="asset-modal" onclick="closeAssets(event)">
@@ -200,6 +204,26 @@
       "USDJPY-OTC", "USDX-OTC", "WIFUSD-OTC", "XAGUSD-OTC", "XAUUSD-OTC", "XBRUSD-OTC", "XNGUSD-OTC",
       "XPDUSD-OTC", "XPTUSD-OTC", "XTIUSD-OTC"
     ];
+
+    // --- Coin balance logic ---
+    async function fetchCoinBalance() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        document.getElementById('coinValue').textContent = 'Login required';
+        return;
+      }
+      try {
+        const res = await fetch('/api/profile', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        document.getElementById('coinValue').textContent = data.coins;
+      } catch {
+        document.getElementById('coinValue').textContent = 'Error';
+      }
+    }
+    fetchCoinBalance();
 
     function showAssets() {
       const container = document.getElementById("assetList");
@@ -272,6 +296,9 @@
 
       output.sort((a, b) => a.time.localeCompare(b.time));
       document.getElementById("output").value = output.map(sig => sig.signal).join("\n");
+
+      // After generating signals, refresh coin balance
+      fetchCoinBalance();
     }
   </script>
 </body>
