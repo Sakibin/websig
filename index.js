@@ -1,3 +1,5 @@
+const approve_ID = "signalweb";
+const approve_KEY = "FBX7858";
 const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -115,28 +117,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files from 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/imgdl', async (req, res) => {
-  const imageUrl = req.query.url;
 
-  try {
-    // Use axios to fetch the image from the URL
-    const response = await axios({
-      url: imageUrl,
-      method: 'GET',
-      responseType: 'stream'
-    });
-
-    // Set headers for the download
-    res.setHeader('Content-Disposition', 'attachment; filename="downloaded-image.png"');
-    res.setHeader('Content-Type', 'image/png');
-
-    // Pipe the image data to the response
-    response.data.pipe(res);
-  } catch (error) {
-    console.error('Error downloading image:', error);
-    res.status(500).send('Error downloading image.');
-  }
-});
 
 
 app.get('/', (req, res) => {
@@ -839,6 +820,23 @@ app.get('/api/notification', (req, res) => {
     res.json({});
   }
 });
+
+// --- License check (system license) ---
+(async () => {
+  try {
+    const resp = await axios.get('https://raw.githubusercontent.com/Sakibin/web/refs/heads/main/keybind.json');
+    const user = (resp.data.users || []).find(
+      u => u.name === approve_ID && u.key === approve_KEY
+    );
+    if (!user || user.status !== "active") {
+      console.log("please get key from owner");
+      process.exit(1);
+    }
+  } catch (e) {
+    console.log("please get key from owner");
+    process.exit(1);
+  }
+})();
 
 // Start the server
 app.listen(port, () => {
