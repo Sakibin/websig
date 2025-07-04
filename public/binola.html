@@ -163,12 +163,22 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 </head>
 <body>
-  <div id="userAvatar" style="display:none;position:fixed;top:20px;right:20px;z-index:1000;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span id="userEmail" style="color:#ffcc00;font-weight:bold;"></span>
-      <span id="userStatus" style="background:#222;color:#ffcc00;padding:2px 8px;border-radius:8px;font-size:12px;"></span>
-      <span id="coinCount" style="color:#ffcc00;font-weight:bold;"></span>
-      <button onclick="logout()" style="background:#ff4444;color:white;border:none;border-radius:6px;padding:4px 10px;font-weight:bold;margin-left:8px;cursor:pointer;">Logout</button>
+  <!-- User Icon and Dropdown -->
+  <div id="userIconContainer" style="display:none;position:fixed;top:20px;right:20px;z-index:1000;">
+    <button id="userIconBtn" style="background:#00ffff;border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px #00ffff33;">
+      <span style="color:#181f2a;font-size:1.5em;font-weight:bold;">&#9786;</span>
+    </button>
+    <div id="userDropdown" style="display:none;position:absolute;top:48px;right:0;background:#232b3b;border:1.5px solid #00ffff;border-radius:10px;box-shadow:0 4px 16px #00ffff33;padding:1rem 1.5rem;min-width:220px;">
+      <div style="margin-bottom:8px;">
+        <span id="userEmail" style="color:#ffcc00;font-weight:bold;"></span>
+      </div>
+      <div style="margin-bottom:8px;">
+        <span id="userStatus" style="background:#222;color:#ffcc00;padding:2px 8px;border-radius:8px;font-size:12px;"></span>
+      </div>
+      <div style="margin-bottom:12px;">
+        <span id="coinCount" style="color:#ffcc00;font-weight:bold;"></span>
+      </div>
+      <button onclick="logout()" style="background:#ff4444;color:white;border:none;border-radius:6px;padding:4px 10px;font-weight:bold;cursor:pointer;width:100%;">Logout</button>
     </div>
   </div>
   <div id="loginForm" class="login-form" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#232b3b;padding:2rem;border-radius:10px;border:1px solid #ffcc00;z-index:1001;min-width:300px;">
@@ -272,6 +282,25 @@
       auth.signOut();
     }
 
+    // User icon dropdown logic
+    const userIconContainer = document.getElementById('userIconContainer');
+    const userIconBtn = document.getElementById('userIconBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    let dropdownOpen = false;
+
+    userIconBtn.onclick = function(e) {
+      dropdownOpen = !dropdownOpen;
+      userDropdown.style.display = dropdownOpen ? 'block' : 'none';
+      e.stopPropagation();
+    };
+    document.addEventListener('click', function() {
+      if (dropdownOpen) {
+        userDropdown.style.display = 'none';
+        dropdownOpen = false;
+      }
+    });
+    userDropdown.onclick = function(e) { e.stopPropagation(); };
+
     async function updateUserInfo() {
       if (!userToken) return;
       try {
@@ -305,14 +334,17 @@
         } catch {}
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
-        document.getElementById('userAvatar').style.display = 'block';
+        // Hide old user bar, show icon
+        // document.getElementById('userAvatar').style.display = 'block';
+        document.getElementById('userIconContainer').style.display = 'block';
         await updateUserInfo();
       } else {
         currentUser = null;
         userToken = null;
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('mainContent').style.display = 'none';
-        document.getElementById('userAvatar').style.display = 'none';
+        // document.getElementById('userAvatar').style.display = 'none';
+        document.getElementById('userIconContainer').style.display = 'none';
       }
     });
 
