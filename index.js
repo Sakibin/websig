@@ -263,54 +263,6 @@ app.get("/api/signals", async (req, res) => {
   }
 });
 
-
-
-
-app.get('/ephoto', async (req, res) => {
-    const { number, text } = req.query;
-    if (!number || !text) {
-        return res.status(400).send('Missing number or text parameter');
-    }
-
-    const urls = {
-        "1": "https://en.ephoto360.com/create-a-cloud-text-effect-in-the-sky-618.html",
-        "2": "https://en.ephoto360.com/create-colorful-neon-light-text-effects-online-797.html",
-        "3": "https://en.ephoto360.com/naruto-shippuden-logo-style-text-effect-online-808.html",
-        "4": "https://en.ephoto360.com/create-online-3d-comic-style-text-effects-817.html",
-        "5": "https://en.ephoto360.com/write-text-on-wet-glass-online-589.html",
-        "6": "https://en.ephoto360.com/write-in-sand-summer-beach-online-576.html",
-        "7": "https://en.ephoto360.com/green-neon-text-effect-395.html",
-        "8": "https://en.ephoto360.com/text-firework-effect-356.html",
-        "9": "https://en.ephoto360.com/online-hot-metallic-effect-341.html",
-        "10": "https://en.ephoto360.com/paint-splatter-text-effect-72.html",
-        "11": "https://en.ephoto360.com/create-digital-glitch-text-effects-online-767.html",
-    };
-
-    const url = urls[number];
-
-    if (!url) {
-        return res.status(400).send('Invalid number parameter');
-    }
-
-    try {
-        const photo360 = new Photo360(url);
-        photo360.setName(text);
-        const imgUrl = await photo360.execute();
-
-        if (imgUrl.imageUrl) {
-            const imageResponse = await axios.get(imgUrl.imageUrl, { responseType: 'arraybuffer' });
-            res.set('Content-Type', 'image/png');
-            res.send(imageResponse.data);
-        } else {
-            res.status(500).send('Failed to generate image');
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
-});
-
-
 app.get('/gptgo', async (req, res) => {
   const userPrompt = req.query.prompt || "Hello";
   const uid = req.query.uid || "webuser";
@@ -769,8 +721,9 @@ app.get('/api/admin/chats', (req, res) => {
 
 // Admin replies to user
 app.post('/api/admin/chat/reply', (req, res) => {
-  const password = req.query.pass;
-  if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
+  // REMOVE password check for admin reply
+  // const password = req.query.pass;
+  // if (password !== 'SRFG566') return res.status(401).json({ error: 'Unauthorized' });
 
   // Ensure body is parsed
   let userId, message;

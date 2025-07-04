@@ -710,7 +710,7 @@
       const msg = input.value.trim();
       if (!msg || !modalChatUserId) return;
       input.value = '';
-      await fetch('/api/admin/chat/reply?pass=SRFG566', {
+      await fetch('/api/admin/chat/reply', { // removed ?pass=SRFG566
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: modalChatUserId, message: msg })
@@ -841,7 +841,7 @@
       const msg = input.value.trim();
       if (!msg) return false;
       input.value = '';
-      await fetch('/api/admin/chat/reply?pass=SRFG566', {
+      await fetch('/api/admin/chat/reply', { // removed ?pass=SRFG566
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, message: msg })

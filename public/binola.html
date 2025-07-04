@@ -159,11 +159,28 @@
       }
     }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 </head>
 <body>
-  <div class="container">
+  <div id="userAvatar" style="display:none;position:fixed;top:20px;right:20px;z-index:1000;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span id="userEmail" style="color:#ffcc00;font-weight:bold;"></span>
+      <span id="userStatus" style="background:#222;color:#ffcc00;padding:2px 8px;border-radius:8px;font-size:12px;"></span>
+      <span id="coinCount" style="color:#ffcc00;font-weight:bold;"></span>
+      <button onclick="logout()" style="background:#ff4444;color:white;border:none;border-radius:6px;padding:4px 10px;font-weight:bold;margin-left:8px;cursor:pointer;">Logout</button>
+    </div>
+  </div>
+  <div id="loginForm" class="login-form" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#232b3b;padding:2rem;border-radius:10px;border:1px solid #ffcc00;z-index:1001;min-width:300px;">
+    <h2 style="color:#ffcc00;text-align:center;margin-bottom:1rem;">Login to Access OTC Signals</h2>
+    <input type="email" id="email" placeholder="Email" class="login-input" style="width:100%;margin-bottom:1rem;padding:0.8rem;border:1px solid #ffcc00;background:#181f2a;color:#ffcc00;border-radius:4px;">
+    <input type="password" id="password" placeholder="Password" class="login-input" style="width:100%;margin-bottom:1rem;padding:0.8rem;border:1px solid #ffcc00;background:#181f2a;color:#ffcc00;border-radius:4px;">
+    <button onclick="login()" class="login-btn" style="width:100%;background:#ffcc00;color:#181f2a;border:none;padding:0.8rem;border-radius:4px;font-weight:bold;margin-bottom:0.5rem;cursor:pointer;">Login</button>
+    <button onclick="register()" class="register-btn" style="width:100%;background:transparent;color:#ffcc00;border:1px solid #ffcc00;padding:0.8rem;border-radius:4px;cursor:pointer;">Register (Get 20 Free Coins)</button>
+    <div id="authMessage" class="auth-message" style="margin-top:1rem;text-align:center;color:#ff4444;"></div>
+  </div>
+  <div class="container" id="mainContent" style="display:none;">
     <h2>OTC Signal Generator</h2>
-
     <div id="coinBalance" style="margin-bottom:18px;font-weight:600;color:#ffcc00;text-align:right;">
       Coins: <span id="coinValue">...</span>
     </div>
@@ -194,7 +211,112 @@
     <h3>Generated Signals:</h3>
     <textarea id="output" readonly placeholder="Signals will appear here..."></textarea>
   </div>
+  <div id="customAlert" class="custom-alert" style="display:none;position:fixed;bottom:20px;right:20px;background:#232b3b;color:#ffcc00;border:1px solid #ffcc00;box-shadow:0 0 10px #ffcc00;padding:1rem 1.5rem;border-radius:10px;font-weight:bold;z-index:9999;opacity:0;transform:translateY(20px);transition:opacity 0.4s,transform 0.4s;pointer-events:none;"></div>
   <script>
+    // --- Firebase config ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyC9oOgsN0IE5vw48dnp1n4SykPSQsL8lSw",
+      authDomain: "sakibin-75f62.firebaseapp.com",
+      projectId: "sakibin-75f62",
+      storageBucket: "sakibin-75f62.appspot.com",
+      messagingSenderId: "732867500543",
+      appId: "1:732867500543:web:96df65624c7897c106efca",
+      measurementId: "G-BGGNPS1N1X"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    let currentUser = null;
+    let userToken = null;
+
+    function showAlert(message, duration = 3000) {
+      const alertBox = document.getElementById("customAlert");
+      alertBox.textContent = message;
+      alertBox.style.display = "block";
+      alertBox.classList.add("show");
+      setTimeout(() => {
+        alertBox.classList.remove("show");
+        alertBox.style.display = "none";
+      }, duration);
+    }
+
+    function showAuthMessage(message, type) {
+      const messageEl = document.getElementById('authMessage');
+      messageEl.textContent = message;
+      messageEl.style.color = type === 'success' ? '#00ff99' : '#ff4444';
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        showAuthMessage('Login successful!', 'success');
+      } catch (error) {
+        showAuthMessage(error.message, 'error');
+      }
+    }
+
+    async function register() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+        showAuthMessage('Registration successful! You got 20 free coins!', 'success');
+      } catch (error) {
+        showAuthMessage(error.message, 'error');
+      }
+    }
+
+    function logout() {
+      auth.signOut();
+    }
+
+    async function updateUserInfo() {
+      if (!userToken) return;
+      try {
+        const response = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${userToken}` }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          document.getElementById('userEmail').textContent = currentUser.email;
+          document.getElementById('userStatus').textContent = userData.isPremium ? 'PREMIUM USER' : 'FREE USER';
+          document.getElementById('coinCount').textContent = `${userData.coins} Coins`;
+          document.getElementById('coinValue').textContent = userData.coins;
+        }
+      } catch (error) {
+        document.getElementById('coinValue').textContent = 'Error';
+      }
+    }
+
+    // Auth state observer
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        userToken = await user.getIdToken();
+        // Verify token with backend (creates user if new)
+        try {
+          await fetch('/verifyToken', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: userToken })
+          });
+        } catch {}
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        document.getElementById('userAvatar').style.display = 'block';
+        await updateUserInfo();
+      } else {
+        currentUser = null;
+        userToken = null;
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('userAvatar').style.display = 'none';
+      }
+    });
+
+    // --- OTC pairs ---
     const otcPairs = [
       "AUDCHF-OTC", "AUDJPY-OTC", "AUDUSD-OTC", "AUS200-OTC", "BCHUSD-OTC", "BNBUSD-OTC", "BTCUSD-OTC",
       "DOTUSD-OTC", "ETHUSD-OTC", "EURAUD-OTC", "EURCAD-OTC", "EURGBP-OTC", "EURJPY-OTC", "EURUSD-OTC",
@@ -204,26 +326,6 @@
       "USDJPY-OTC", "USDX-OTC", "WIFUSD-OTC", "XAGUSD-OTC", "XAUUSD-OTC", "XBRUSD-OTC", "XNGUSD-OTC",
       "XPDUSD-OTC", "XPTUSD-OTC", "XTIUSD-OTC"
     ];
-
-    // --- Coin balance logic ---
-    async function fetchCoinBalance() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        document.getElementById('coinValue').textContent = 'Login required';
-        return;
-      }
-      try {
-        const res = await fetch('/api/profile', {
-          headers: { Authorization: 'Bearer ' + token }
-        });
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        document.getElementById('coinValue').textContent = data.coins;
-      } catch {
-        document.getElementById('coinValue').textContent = 'Error';
-      }
-    }
-    fetchCoinBalance();
 
     function showAssets() {
       const container = document.getElementById("assetList");
@@ -235,14 +337,18 @@
       document.getElementById("assetListModal").classList.remove("active");
     }
 
-    function generateSignals() {
+    async function generateSignals() {
+      if (!userToken) {
+        showAlert("Please login to generate signals.");
+        return;
+      }
       const assetInput = document.getElementById("assetInput").value.trim();
       const startTime = document.getElementById("startTime").value;
       const endTime = document.getElementById("endTime").value;
       const minPercentage = document.getElementById("minPercentage").value;
 
       if (!startTime || !endTime) {
-        alert("Enter valid start and end times.");
+        showAlert("Enter valid start and end times.");
         return;
       }
 
@@ -260,10 +366,46 @@
       }
 
       if (selectedAssets.length === 0) {
-        alert("No valid assets selected.");
+        showAlert("No valid assets selected.");
         return;
       }
 
+      // Simulate coin deduction: call /api/signal with dummy params to deduct coins
+      try {
+        // We'll use the first asset and basic params for deduction
+        const params = new URLSearchParams({
+          start: startTime,
+          end: endTime,
+          duration: 1,
+          currency_pairs: selectedAssets[0],
+          percentage_min: minPercentage || 90
+        });
+        const res = await fetch(`/api/signal?${params.toString()}`, {
+          headers: { Authorization: 'Bearer ' + userToken }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.error && data.error.includes('coin')) {
+            showAlert("Insufficient coins! Please contact admin or upgrade.");
+            await updateUserInfo();
+            return;
+          } else {
+            showAlert("Error: " + (data.error || "Failed to deduct coins."));
+            return;
+          }
+        }
+        // Update coin count
+        document.getElementById('coinValue').textContent = data.userCoins;
+        document.getElementById('coinCount').textContent = `${data.userCoins} Coins`;
+        if (data.userCoins <= 0) {
+          showAlert("You've used all your coins! Upgrade to Premium or ask admin for more coins.");
+        }
+      } catch (err) {
+        showAlert("Network error. Try again.");
+        return;
+      }
+
+      // --- Generate signals (local random logic) ---
       const [startHour, startMinute] = startTime.split(":").map(Number);
       const [endHour, endMinute] = endTime.split(":").map(Number);
 
@@ -296,9 +438,6 @@
 
       output.sort((a, b) => a.time.localeCompare(b.time));
       document.getElementById("output").value = output.map(sig => sig.signal).join("\n");
-
-      // After generating signals, refresh coin balance
-      fetchCoinBalance();
     }
   </script>
 </body>
