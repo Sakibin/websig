@@ -454,6 +454,11 @@
         </tbody>
       </table>
     </div>
+
+    <div style="margin:40px 0;">
+      <h2 style="color:#ffcc00;">Live Chat (User Messages)</h2>
+      <div id="adminChatList" style="display:flex;gap:20px;flex-wrap:wrap;"></div>
+    </div>
   </div>
 
   <!-- Edit User Modal -->
@@ -497,82 +502,106 @@
     let notificationQueue = [];
     let modalChatUserId = null;
     let modalChatPolling = null;
-    let unseenMessages = {}; // { userId: count }
 
-    // --- Unseen Message Tracking ---
-    function getUnseenCounts() {
-      // Try to load from localStorage
-      try {
-        const data = localStorage.getItem('admin_unseen_msgs');
-        if (data) unseenMessages = JSON.parse(data);
-      } catch {}
-    }
-    function saveUnseenCounts() {
-      try {
-        localStorage.setItem('admin_unseen_msgs', JSON.stringify(unseenMessages));
-      } catch {}
-    }
-    function resetUnseen(userId) {
-      unseenMessages[userId] = 0;
-      saveUnseenCounts();
-      updateUserTableIcons();
-    }
-    function incrementUnseen(userId, count = 1) {
-      unseenMessages[userId] = (unseenMessages[userId] || 0) + count;
-      saveUnseenCounts();
-      updateUserTableIcons();
+    // Notification System
+    function showNotification(message, type = 'info', duration = 4000) {
+      const container = document.getElementById('notificationContainer');
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+
+      const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+      };
+
+      notification.innerHTML = `
+        <span class="notification-icon">${icons[type] || icons.info}</span>
+        <span>${message}</span>
+        <button class="notification-close" onclick="closeNotification(this)">×</button>
+        <div class="notification-progress"></div>
+      `;
+
+      container.appendChild(notification);
+
+      // Trigger animation
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+
+      // Auto remove
+      const timeout = setTimeout(() => {
+        closeNotification(notification);
+      }, duration);
+
+      // Store timeout for manual close
+      notification.timeout = timeout;
+
+      return notification;
     }
 
-    // --- User Table Rendering with Notification Icon ---
-    let latestChatsCache = {}; // { userId: lastMsgCount }
+    function closeNotification(element) {
+      const notification = element.closest ? element.closest('.notification') : element;
+      if (notification && notification.timeout) {
+        clearTimeout(notification.timeout);
+      }
+
+      if (notification) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 400);
+      }
+    }
+
+    function showLoadingOverlay() {
+      document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoadingOverlay() {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    function setButtonLoading(button, loading = true) {
+      if (loading) {
+        button.classList.add('btn-loading');
+        button.originalText = button.textContent;
+        button.textContent = '';
+      } else {
+        button.classList.remove('btn-loading');
+        if (button.originalText) {
+          button.textContent = button.originalText;
+        }
+      }
+    }
+
+    function addPulseAnimation(element) {
+      element.classList.add('pulse-animation');
+      setTimeout(() => {
+        element.classList.remove('pulse-animation');
+      }, 300);
+    }
+
     async function loadUsers() {
       try {
         showLoadingOverlay();
         document.getElementById('loading').style.display = 'block';
         document.getElementById('userTable').style.display = 'none';
 
-        const [usersRes, chatsRes] = await Promise.all([
-          fetch('/api/admin/users?pass=SRFG566'),
-          fetch('/api/admin/chats?pass=SRFG566')
-        ]);
-        if (!usersRes.ok) {
-          console.error('Failed to fetch users:', usersRes.status, await usersRes.text());
-          showNotification('Failed to fetch users', 'error');
-          hideLoadingOverlay();
-          return;
-        }
-        const users = await usersRes.json();
-        if (!Array.isArray(users)) {
-          console.error('Users response is not an array:', users);
-          showNotification('Invalid users data', 'error');
-          hideLoadingOverlay();
-          return;
-        }
-        const chats = await chatsRes.json();
+        const response = await fetch('/api/admin/users?pass=SRFG566');
+        const users = await response.json();
 
-        // Build unseen message counts
-        getUnseenCounts();
-        if (Array.isArray(chats)) {
-          chats.forEach(chatObj => {
-            const { userId, chat } = chatObj;
-            // Find last seen index
-            const lastSeen = unseenMessages[userId] || 0;
-            const total = chat.length;
-            // Only count user messages not seen
-            let unseen = 0;
-            for (let i = lastSeen; i < total; ++i) {
-              if (chat[i].from === 'user') unseen++;
-            }
-            unseenMessages[userId] = total - unseen === 0 ? 0 : unseen;
-          });
-          saveUnseenCounts();
+        if (response.ok) {
+          displayUsers(users);
+          updateStats(users);
+          showNotification(`Successfully loaded ${users.length} users`, 'success', 2000);
+        } else {
+          showNotification('Error loading users: ' + users.error, 'error');
         }
-
-        displayUsers(users, chats);
-        updateStats(users);
-        showNotification(`Successfully loaded ${users.length} users`, 'success', 2000);
       } catch (error) {
-        console.error('Network error while loading users:', error);
         showNotification('Network error while loading users: ' + error.message, 'error');
       } finally {
         hideLoadingOverlay();
@@ -580,44 +609,14 @@
       }
     }
 
-    function displayUsers(users, chats = []) {
+    function displayUsers(users) {
       const tbody = document.getElementById('usersBody');
       tbody.innerHTML = '';
-      // Build a map for quick chat lookup
-      const chatMap = {};
-      if (Array.isArray(chats)) {
-        chats.forEach(c => { chatMap[c.userId] = c; });
-      }
-      getUnseenCounts();
+
       users.forEach(user => {
-        const chatObj = chatMap[user.userId];
-        let unseen = unseenMessages[user.userId] || 0;
-        // Count unseen user messages
-        if (chatObj && Array.isArray(chatObj.chat)) {
-          // Only count user messages after last seen
-          let lastSeenIdx = 0;
-          let totalUserMsgs = 0;
-          chatObj.chat.forEach(msg => {
-            if (msg.from === 'user') totalUserMsgs++;
-          });
-          unseen = totalUserMsgs;
-          if (unseenMessages[user.userId] !== undefined) {
-            // If admin has seen some messages, subtract
-            unseen = Math.max(0, totalUserMsgs - unseenMessages[user.userId]);
-          }
-        }
-        const notifIcon = unseen > 0
-          ? `<span class="notif-bell" style="margin-right:6px;position:relative;cursor:pointer;" title="${unseen} new message(s)">
-              <span style="font-size:1.2em;">🔔</span>
-              <span style="position:absolute;top:-7px;right:-7px;background:#ff4444;color:#fff;font-size:0.8em;padding:1px 6px;border-radius:10px;font-weight:bold;">${unseen}</span>
-            </span>`
-          : `<span class="notif-bell" style="margin-right:6px;font-size:1.2em;color:#aaa;" title="No new messages">🔔</span>`;
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td>
-            ${notifIcon}
-            ${user.email}
-          </td>
+          <td>${user.email}</td>
           <td>${user.coins}</td>
           <td>
             <span class="${user.isPremium ? 'premium-badge' : 'free-badge'}">
@@ -633,34 +632,8 @@
         `;
         tbody.appendChild(row);
       });
-      document.getElementById('userTable').style.display = 'block';
-    }
 
-    function updateUserTableIcons() {
-      // Update notification icons in the table
-      const rows = document.querySelectorAll('#usersBody tr');
-      rows.forEach(row => {
-        const emailCell = row.querySelector('td');
-        if (!emailCell) return;
-        const email = emailCell.textContent.trim();
-        // Find userId by email (not optimal, but works for small lists)
-        let userId = null;
-        for (const key in unseenMessages) {
-          if (email.includes('@') && email.includes('.')) {
-            userId = key;
-            break;
-          }
-        }
-        if (!userId) return;
-        const unseen = unseenMessages[userId] || 0;
-        const notifIcon = unseen > 0
-          ? `<span class="notif-bell" style="margin-right:6px;position:relative;cursor:pointer;" title="${unseen} new message(s)">
-              <span style="font-size:1.2em;">🔔</span>
-              <span style="position:absolute;top:-7px;right:-7px;background:#ff4444;color:#fff;font-size:0.8em;padding:1px 6px;border-radius:10px;font-weight:bold;">${unseen}</span>
-            </span>`
-          : `<span class="notif-bell" style="margin-right:6px;font-size:1.2em;color:#aaa;" title="No new messages">🔔</span>`;
-        emailCell.innerHTML = notifIcon + email;
-      });
+      document.getElementById('userTable').style.display = 'block';
     }
 
     function updateStats(users) {
@@ -695,8 +668,6 @@
       loadModalChat();
       if (modalChatPolling) clearInterval(modalChatPolling);
       modalChatPolling = setInterval(loadModalChat, 2500);
-      // Mark all messages as seen for this user
-      markUserChatSeen(userId);
     }
 
     function closeModal() {
@@ -731,34 +702,6 @@
         </div>`;
       });
       box.scrollTop = box.scrollHeight;
-      // Mark all as seen
-      markUserChatSeen(modalChatUserId, chatObj.chat);
-    }
-
-    function markUserChatSeen(userId, chatArr) {
-      // Mark all user messages as seen for this user
-      if (!userId) return;
-      if (!chatArr) {
-        // If chatArr not provided, fetch and update
-        fetch('/api/admin/chats?pass=SRFG566')
-          .then(res => res.json())
-          .then(chats => {
-            const chatObj = Array.isArray(chats) ? chats.find(c => c.userId === userId) : null;
-            if (chatObj && Array.isArray(chatObj.chat)) {
-              let count = 0;
-              chatObj.chat.forEach(msg => { if (msg.from === 'user') count++; });
-              unseenMessages[userId] = count;
-              saveUnseenCounts();
-              updateUserTableIcons();
-            }
-          });
-      } else {
-        let count = 0;
-        chatArr.forEach(msg => { if (msg.from === 'user') count++; });
-        unseenMessages[userId] = count;
-        saveUnseenCounts();
-        updateUserTableIcons();
-      }
     }
 
     document.getElementById('modalChatForm').addEventListener('submit', async function(e) {
@@ -767,7 +710,7 @@
       const msg = input.value.trim();
       if (!msg || !modalChatUserId) return;
       input.value = '';
-      await fetch('/api/admin/chat/reply', {
+      await fetch('/api/admin/chat/reply?pass=SRFG566', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: modalChatUserId, message: msg })
@@ -856,6 +799,57 @@
       }
     }
 
+    // --- Admin Live Chat ---
+    async function loadAdminChats() {
+      const res = await fetch('/api/admin/chats?pass=SRFG566');
+      const chats = await res.json();
+      const list = document.getElementById('adminChatList');
+      list.innerHTML = '';
+      if (!Array.isArray(chats) || chats.length === 0) {
+        list.innerHTML = '<div style="color:#fff;">No user messages yet.</div>';
+        return;
+      }
+      chats.forEach(chatObj => {
+        const { userId, email, chat } = chatObj;
+        let html = `<div style="min-width:300px;max-width:400px;background:#1e2a4a;border-radius:10px;padding:12px 10px 10px 10px;margin-bottom:10px;border:1px solid #ffcc00;">
+          <div style="font-weight:bold;color:#ffcc00;">${email}</div>
+          <div style="height:120px;overflow-y:auto;background:#222;padding:6px 4px 6px 8px;border-radius:6px;margin:8px 0 8px 0;font-size:13px;">`;
+        chat.forEach(msg => {
+          const align = msg.from === 'admin' ? 'right' : 'left';
+          const color = msg.from === 'admin' ? '#ffcc00' : '#fff';
+          const bg = msg.from === 'admin' ? '#333' : '#444';
+          const who = msg.from === 'admin' ? 'Admin' : 'User';
+          const time = new Date(msg.time).toLocaleTimeString();
+          html += `<div style="text-align:${align};margin-bottom:3px;">
+            <span style="display:inline-block;background:${bg};color:${color};padding:3px 7px;border-radius:8px;max-width:80%;word-break:break-word;">
+              <b>${who}:</b> ${msg.text} <span style="font-size:10px;color:#aaa;">${time}</span>
+            </span>
+          </div>`;
+        });
+        html += `</div>
+          <form onsubmit="return adminReplyChat('${userId}', this)">
+            <input type="text" name="reply" placeholder="Reply..." style="width:70%;padding:5px;border-radius:6px;border:1px solid #ffcc00;background:#222;color:#ffcc00;" />
+            <button type="submit" style="background:#ffcc00;color:#222;border:none;border-radius:6px;padding:5px 12px;font-weight:bold;">Send</button>
+          </form>
+        </div>`;
+        list.innerHTML += html;
+      });
+    }
+
+    async function adminReplyChat(userId, form) {
+      const input = form.reply;
+      const msg = input.value.trim();
+      if (!msg) return false;
+      input.value = '';
+      await fetch('/api/admin/chat/reply?pass=SRFG566', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, message: msg })
+      });
+      loadAdminChats();
+      return false;
+    }
+
     // --- Notification Management ---
     async function loadCurrentNotification() {
       const res = await fetch('/api/admin/notification?pass=SRFG566');
@@ -900,10 +894,10 @@
     });
 
     // Load users and chats on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      loadUsers();
-      loadCurrentNotification();
-    });
+    loadUsers();
+    loadAdminChats();
+    setInterval(loadAdminChats, 4000);
+    loadCurrentNotification();
   </script>
 </body>
 </html>

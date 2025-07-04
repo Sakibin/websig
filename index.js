@@ -267,12 +267,28 @@ app.get('/gptgo', async (req, res) => {
   const userPrompt = req.query.prompt || "Hello";
   const uid = req.query.uid || "webuser";
   try {
+    // Deduct 1 coin for each AI response if user exists
+    let userData = null;
+    if (users.has(uid)) {
+      userData = users.get(uid);
+      if (userData.coins <= 0) {
+        return res.status(403).json({ status: false, error: "Insufficient coins" });
+      }
+    }
     const baseUrl = await baseApiUrl();
     const response = await axios.get(
       `${baseUrl}/gemini2?text=${encodeURIComponent(userPrompt)}&senderID=${uid}`
     );
     const mg = response.data.response;
-    res.json({ status: true, gpt: mg });
+
+    // Deduct 1 coin and save if user exists
+    if (userData) {
+      userData.coins -= 1;
+      users.set(uid, userData);
+      saveUsersToFile();
+    }
+
+    res.json({ status: true, gpt: mg, userCoins: userData ? userData.coins : undefined });
   } catch (err) {
     res.status(500).json({ status: false, error: err.message });
   }

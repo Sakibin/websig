@@ -261,7 +261,7 @@
             method: 'GET',
           });
           const data = await response.json();
-          if (data.status) {
+          if (response.ok && data.status) {
             const aiMessage = document.createElement('div');
             aiMessage.className = 'message ai-message';
             aiMessage.innerHTML = `
@@ -278,6 +278,12 @@
             aiMessage.querySelector('.copy-button').addEventListener('click', function () {
               copyToClipboard(data.gpt, this);
             });
+            // Show coin info if available
+            if (typeof data.userCoins !== "undefined") {
+              showAlert(`-1 coin used. Remaining: ${data.userCoins}`, 2000);
+            }
+          } else if (data.error && data.error.includes('coin')) {
+            showAlert('Insufficient coins! Please contact admin or upgrade.');
           } else {
             showAlert('Failed to get a response from the server.');
           }
