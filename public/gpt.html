@@ -218,6 +218,9 @@
       <h1>Eagle A.i</h1>
       <span class="share-icon"><i class="fas fa-share-alt"></i></span>
     </div>
+    <div id="coinBalance" style="margin:12px 24px 0 0;font-weight:600;color:#ffcc00;text-align:right;">
+      Coins: <span id="coinValue">...</span>
+    </div>
     <div class="chat-messages" id="chatMessages">
  
       <div class="message ai-message">
@@ -240,10 +243,78 @@
   </div>
   <div id="customAlert" class="custom-alert"></div>
   <script>
+    // --- Firebase config (reuse from binola.html) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyC9oOgsN0IE5vw48dnp1n4SykPSQsL8lSw",
+      authDomain: "sakibin-75f62.firebaseapp.com",
+      projectId: "sakibin-75f62",
+      storageBucket: "sakibin-75f62.appspot.com",
+      messagingSenderId: "732867500543",
+      appId: "1:732867500543:web:96df65624c7897c106efca",
+      measurementId: "G-BGGNPS1N1X"
+    };
+    if (window.firebase === undefined) {
+      const script1 = document.createElement('script');
+      script1.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js";
+      document.head.appendChild(script1);
+      const script2 = document.createElement('script');
+      script2.src = "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js";
+      document.head.appendChild(script2);
+    }
+    // Wait for firebase to load
+    function waitForFirebase(cb) {
+      if (window.firebase && window.firebase.auth) cb();
+      else setTimeout(() => waitForFirebase(cb), 50);
+    }
+    let currentUser = null;
+    let userToken = null;
+    waitForFirebase(() => {
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      // Auth state observer
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          currentUser = user;
+          userToken = await user.getIdToken();
+          try {
+            await fetch('/verifyToken', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: userToken })
+            });
+          } catch {}
+          await updateUserInfo();
+        } else {
+          currentUser = null;
+          userToken = null;
+          document.getElementById('coinValue').textContent = '...';
+        }
+      });
+    });
+
+    async function updateUserInfo() {
+      if (!userToken) return;
+      try {
+        const response = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${userToken}` }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          document.getElementById('coinValue').textContent = userData.coins;
+        }
+      } catch (error) {
+        document.getElementById('coinValue').textContent = 'Error';
+      }
+    }
+
     async function sendMessage() {
       const userInput = document.getElementById('userInput');
       const chatMessages = document.getElementById('chatMessages');
       if (userInput.value.trim() !== '') {
+        if (!userToken) {
+          showAlert("Please login to use the AI and spend coins.");
+          return;
+        }
         const userMessage = document.createElement('div');
         userMessage.className = 'message user-message';
         userMessage.textContent = userInput.value;
@@ -252,11 +323,7 @@
         const prompt = userInput.value;
         userInput.value = '';
         try {
-          // Use a unique senderID for each user if available, fallback to 'webuser'
-          let uid = 'webuser';
-          if (window.currentUser && window.currentUser.uid) {
-            uid = window.currentUser.uid;
-          }
+          let uid = currentUser && currentUser.uid ? currentUser.uid : 'webuser';
           const response = await fetch(`/gptgo?prompt=${encodeURIComponent(prompt)}&uid=${encodeURIComponent(uid)}`, {
             method: 'GET',
           });
@@ -280,10 +347,15 @@
             });
             // Show coin info if available
             if (typeof data.userCoins !== "undefined") {
+              document.getElementById('coinValue').textContent = data.userCoins;
               showAlert(`-1 coin used. Remaining: ${data.userCoins}`, 2000);
+              if (data.userCoins <= 0) {
+                showAlert("You've used all your coins! Upgrade to Premium or ask admin for more coins.");
+              }
             }
           } else if (data.error && data.error.includes('coin')) {
             showAlert('Insufficient coins! Please contact admin or upgrade.');
+            document.getElementById('coinValue').textContent = 0;
           } else {
             showAlert('Failed to get a response from the server.');
           }
