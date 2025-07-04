@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PRIME | SIGNALS</title>
+  <title>FUTURE SIGNALS</title>
+
+   <link rel="icon" href=
+  "https://i.ibb.co/rKrQHf7f/New-Project-43-52511-DF.png"
+          type="image/x-icon" />
+  
   <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
   <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
   <script src="https://kit.fontawesome.com/dbc9d516d6.js" crossorigin="anonymous"></script>
@@ -308,6 +313,7 @@
 
   </head>
   <body>
+    <script src="snow.js"></script>
     <!-- User Avatar Corner -->
     <div id="userAvatar" style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: none;">
       <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="toggleUserMenu()">
@@ -372,16 +378,33 @@
       <div id="authMessage" style="margin-top: 1rem; text-align: center; color: #ff4444;"></div>
     </div>
 
-    <div id="mainContent" style="display: none; padding-top: 20px;">
-      <div class="h1" style="font-size: 25px">
- 
-    </div>
+    
+      <div id="mainContent" style="display: none; padding-top: 20px;">
+        <div class="h1" style="font-size: 21px">
+      <script type="text/javascript">
+      farbbibliothek = new Array();
+      farbbibliothek[0] = new Array("#FF0000","#FF1100","#FF2200","#FF3300","#FF4400","#FF5500","#FF6600","#FF7700","#FF8800","#FF9900","#FFaa00","#FFbb00","#FFcc00","#FFdd00","#FFee00","#FFff00","#FFee00","#FFdd00","#FFcc00","#FFbb00","#FFaa00","#FF9900","#FF8800","#FF7700","#FF6600","#FF5500","#FF4400","#FF3300","#FF2200","#FF1100");
+      farbbibliothek[1] = new Array("#00FF00","#000000","#00FF00","#00FF00");
+      farbbibliothek[2] = new Array("#00FF00","#FF0000","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00");
+      farbbibliothek[3] = new Array("#FF0000","#FF4000","#FF8000","#FFC000","#FFFF00","#C0FF00","#80FF00","#40FF00","#00FF00","#00FF40","#00FF80","#00FFC0","#00FFFF","#00C0FF","#0080FF","#0040FF","#0000FF","#4000FF","#8000FF","#C000FF","#FF00FF","#FF00C0","#FF0080","#FF0040");
+      farbbibliothek[4] = new Array("#FF0000","#EE0000","#DD0000","#CC0000","#BB0000","#AA0000","#990000","#880000","#770000","#660000","#550000","#440000","#330000","#220000","#110000","#000000","#110000","#220000","#330000","#440000","#550000","#660000","#770000","#880000","#990000","#AA0000","#BB0000","#CC0000","#DD0000","#EE0000");
+      farbbibliothek[5] = new Array("#000000","#000000","#000000","#FFFFFF","#FFFFFF","#FFFFFF");
+      farbbibliothek[6] = new Array("#0000FF","#FFFF00");
+      farben = farbbibliothek[4];
+      function farbschrift(){for(var b=0;b<Buchstabe.length;b++){document.all["a"+b].style.color=farben[b]}farbverlauf()}function string2array(b){Buchstabe=new Array();while(farben.length<b.length){farben=farben.concat(farben)}k=0;while(k<=b.length){Buchstabe[k]=b.charAt(k);k++}}function divserzeugen(){for(var b=0;b<Buchstabe.length;b++){document.write("<span id='a"+b+"' class='a"+b+"'>"+Buchstabe[b]+"</span>")}farbschrift()}var a=1;function farbverlauf(){for(var b=0;b<farben.length;b++){farben[b-1]=farben[b]}farben[farben.length-1]=farben[-1];setTimeout("farbschrift()",30)}var farbsatz=1;function farbtauscher(){farben=farbbibliothek[farbsatz];while(farben.length<text.length){farben=farben.concat(farben)}farbsatz=Math.floor(Math.random()*(farbbibliothek.length-0.0001))}setInterval("farbtauscher()",5000);
+
+      text= "♛ Golden Eagle ♛"; 
+      string2array(text);
+      divserzeugen();
+      </script>
+      </div>
+      
 <h4>© Powered by SECRET SOLUTION YT</h4>
 
       <!-- Centered Navigation Buttons -->      
       <div id="centerNavBtns" style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 16px 0;">
         <button id="coinSignalBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
-          <i class="fas fa-coins" style="margin-right: 8px;"></i> OTC SIGNAL
+          <i class="fas fa-coins" style="margin-right: 8px;"></i> QUOTEX OTC
         </button>
         <button id="primeSignalsBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
           <i class="fas fa-rocket" style="margin-right: 8px;"></i> PRO SIGNALS
@@ -454,6 +477,7 @@
 
       <div id="customAlert" class="custom-alert"></div>
     </div>
+     
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
