@@ -1,4 +1,60 @@
-const approve_ID = "signalweb";
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script><script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyC9oOgsN0IE5vw48dnp1n4SykPSQsL8lSw",
+    authDomain: "sakibin-75f62.firebaseapp.com",
+    projectId: "sakibin-75f62",
+    storageBucket: "sakibin-75f62.appspot.com",
+    messagingSenderId: "732867500543",
+    appId: "1:732867500543:web:96df65624c7897c106efca",
+    measurementId: "G-BGGNPS1N1X",
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Email verification function
+  async function sendEmailVerification() {
+    const user = auth.currentUser;
+    if (user) {
+      await user.sendEmailVerification();
+      alert("Verification email sent!");
+    } else {
+      alert("No user is currently logged in.");
+    }
+  }
+
+  // Password reset function
+  async function resetPassword(email) {
+    try {
+      await auth.sendPasswordResetEmail(email);
+      alert("Password reset email sent!");
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+  
+  // Call sendEmailVerification on successful login
+  async function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      showAuthMessage('Login successful!', 'success');
+      sendEmailVerification(); // Send verification after successful login
+    } catch (error) {
+      showAuthMessage(error.message, 'error');
+    }
+  }
+
+  // Example usage of reset password
+  document.getElementById('resetPasswordBtn').onclick = function() {
+    const email = document.getElementById('resetEmail').value;
+    resetPassword(email);
+  };
+</script>const approve_ID = "signalweb";
 const approve_KEY = "FBX7858";
 const axios = require('axios');
 const express = require('express');
