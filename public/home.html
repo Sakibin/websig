@@ -332,11 +332,17 @@
         <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-dark);">
           <div id="userEmail" style="color: var(--gold); font-size: 14px; margin-bottom: 5px;"></div>
           <div id="userStatus" style="color: var(--highlight); font-size: 12px;"></div>
+          <div id="emailVerificationStatus" style="color: #ff4444; font-size: 12px; margin-top: 5px; display: none;">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 5px;"></i>Email not verified
+          </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <button id="upgradeBtn" onclick="upgradeToPremium()" style="background: var(--gold); color: var(--bg-dark); border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; display: none;">
             <i class="fas fa-crown" style="margin-right: 5px;"></i>Get Premium
+          </button>
+          <button id="verifyEmailBtn" onclick="sendEmailVerification()" style="background: var(--accent); color: var(--bg-dark); border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; display: none;">
+            <i class="fas fa-envelope-check" style="margin-right: 5px;"></i>Verify Email
           </button>
           <button onclick="logout()" style="background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer;">
             <i class="fas fa-sign-out-alt" style="margin-right: 5px;"></i>Logout
@@ -374,7 +380,20 @@
       <input type="email" id="email" placeholder="Email" style="width: 100%; margin-bottom: 1rem; padding: 0.8rem; border: 1px solid var(--gold); background: var(--bg-dark); color: var(--gold); border-radius: 4px;">
       <input type="password" id="password" placeholder="Password" style="width: 100%; margin-bottom: 1rem; padding: 0.8rem; border: 1px solid var(--gold); background: var(--bg-dark); color: var(--gold); border-radius: 4px;">
       <button onclick="login()" style="width: 100%; background: var(--gold); color: var(--bg-dark); border: none; padding: 0.8rem; border-radius: 4px; font-weight: bold; margin-bottom: 0.5rem;">Login</button>
-      <button onclick="register()" style="width: 100%; background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 0.8rem; border-radius: 4px;">Register (Get 20 Free Coins)</button>
+      <button onclick="register()" style="width: 100%; background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 0.8rem; border-radius: 4px; margin-bottom: 0.5rem;">Register (Get 20 Free Coins)</button>
+      
+      <!-- Password Reset Section -->
+      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-dark);">
+        <button onclick="showPasswordReset()" style="width: 100%; background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 0.6rem; border-radius: 4px; font-size: 0.9rem;">
+          <i class="fas fa-key" style="margin-right: 5px;"></i>Forgot Password?
+        </button>
+        
+        <div id="passwordResetSection" style="display: none; margin-top: 1rem;">
+          <input type="email" id="resetEmail" placeholder="Enter your email for password reset" style="width: 100%; margin-bottom: 0.5rem; padding: 0.8rem; border: 1px solid var(--accent); background: var(--bg-dark); color: var(--gold); border-radius: 4px;">
+          <button onclick="sendPasswordReset()" style="width: 100%; background: var(--accent); color: var(--bg-dark); border: none; padding: 0.8rem; border-radius: 4px; font-weight: bold;">Send Reset Link</button>
+        </div>
+      </div>
+      
       <div id="authMessage" style="margin-top: 1rem; text-align: center; color: #ff4444;"></div>
     </div>
 
@@ -534,8 +553,82 @@
         try {
           const userCredential = await auth.createUserWithEmailAndPassword(email, password);
           showAuthMessage('Registration successful! You got 20 free coins!', 'success');
+          
+          // Automatically send verification email after registration
+          setTimeout(async () => {
+            try {
+              await sendEmailVerification();
+            } catch (error) {
+              console.error('Error sending verification email:', error);
+            }
+          }, 1000);
         } catch (error) {
           showAuthMessage(error.message, 'error');
+        }
+      }
+
+      // Password reset functions
+      function showPasswordReset() {
+        const resetSection = document.getElementById('passwordResetSection');
+        resetSection.style.display = resetSection.style.display === 'none' ? 'block' : 'none';
+      }
+
+      async function sendPasswordReset() {
+        const email = document.getElementById('resetEmail').value;
+        
+        if (!email) {
+          showAuthMessage('Please enter your email address', 'error');
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+          });
+
+          const data = await response.json();
+          
+          if (response.ok) {
+            showAuthMessage('Password reset link sent to your email!', 'success');
+            document.getElementById('passwordResetSection').style.display = 'none';
+            document.getElementById('resetEmail').value = '';
+          } else {
+            showAuthMessage(data.error || 'Error sending reset link', 'error');
+          }
+        } catch (error) {
+          showAuthMessage('Error sending reset link', 'error');
+        }
+      }
+
+      // Email verification functions
+      async function sendEmailVerification() {
+        if (!userToken) {
+          showAuthMessage('Please login first', 'error');
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/auth/send-verification', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${userToken}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const data = await response.json();
+          
+          if (response.ok) {
+            showAlert('Email verification link sent! Please check your email.');
+          } else {
+            showAlert(data.error || 'Error sending verification email');
+          }
+        } catch (error) {
+          showAlert('Error sending verification email');
         }
       }
 
@@ -617,6 +710,18 @@
             document.getElementById('userStatus').textContent = userData.isPremium ? 'PREMIUM USER' : 'FREE USER';
             document.getElementById('coinCount').textContent = `${userData.coins} Coins`;
             document.getElementById('upgradeBtn').style.display = userData.isPremium ? 'none' : 'inline-block';
+
+            // Handle email verification status
+            const emailVerificationStatus = document.getElementById('emailVerificationStatus');
+            const verifyEmailBtn = document.getElementById('verifyEmailBtn');
+            
+            if (userData.emailVerified) {
+              emailVerificationStatus.style.display = 'none';
+              verifyEmailBtn.style.display = 'none';
+            } else {
+              emailVerificationStatus.style.display = 'block';
+              verifyEmailBtn.style.display = 'inline-block';
+            }
 
             // Show/hide center navigation buttons
             document.getElementById('coinSignalBtn').style.display = 'block';

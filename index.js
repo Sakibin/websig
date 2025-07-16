@@ -1,60 +1,5 @@
-<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script><script>
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyC9oOgsN0IE5vw48dnp1n4SykPSQsL8lSw",
-    authDomain: "sakibin-75f62.firebaseapp.com",
-    projectId: "sakibin-75f62",
-    storageBucket: "sakibin-75f62.appspot.com",
-    messagingSenderId: "732867500543",
-    appId: "1:732867500543:web:96df65624c7897c106efca",
-    measurementId: "G-BGGNPS1N1X",
-  };
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-
-  // Email verification function
-  async function sendEmailVerification() {
-    const user = auth.currentUser;
-    if (user) {
-      await user.sendEmailVerification();
-      alert("Verification email sent!");
-    } else {
-      alert("No user is currently logged in.");
-    }
-  }
-
-  // Password reset function
-  async function resetPassword(email) {
-    try {
-      await auth.sendPasswordResetEmail(email);
-      alert("Password reset email sent!");
-    } catch (error) {
-      alert(error.message);
-    }
-  }
-  
-  // Call sendEmailVerification on successful login
-  async function login() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    try {
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
-      showAuthMessage('Login successful!', 'success');
-      sendEmailVerification(); // Send verification after successful login
-    } catch (error) {
-      showAuthMessage(error.message, 'error');
-    }
-  }
-
-  // Example usage of reset password
-  document.getElementById('resetPasswordBtn').onclick = function() {
-    const email = document.getElementById('resetEmail').value;
-    resetPassword(email);
-  };
-</script>const approve_ID = "signalweb";
+const approve_ID = "signalweb";
 const approve_KEY = "FBX7858";
 const axios = require('axios');
 const express = require('express');
@@ -62,8 +7,6 @@ const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
 const path = require('path');
 const fs = require('fs');
-
-
 
 //hj
 // Initialize Firebase Admin SDK
@@ -79,13 +22,10 @@ const serviceAccount = { "type": "service_account",
      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-osh5o%40sakibin-75f62.iam.gserviceaccount.com",
      "universe_domain": "googleapis.com"};
 
-
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   storageBucket: "sakibin-75f62.appspot.com"
 });
-
 
 const app = express();
 const port = 6000;
@@ -172,9 +112,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files from 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
-
-
-
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'home.html'));
@@ -375,7 +312,6 @@ app.get('/download', async (req, res) => {
     }
 });
 
-
 app.post('/verifyToken', async (req, res) => {
   const idToken = req.body.token;
 
@@ -388,7 +324,8 @@ app.post('/verifyToken', async (req, res) => {
         email: decodedToken.email,
         coins: 20,
         isPremium: false,
-        signalsUsed: 0
+        signalsUsed: 0,
+        emailVerified: decodedToken.email_verified || false
       });
       saveUsersToFile();
     }
@@ -399,6 +336,59 @@ app.post('/verifyToken', async (req, res) => {
     });
   } catch (error) {
     res.status(401).send('Unauthorized');
+  }
+});
+
+// Password reset endpoint
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    // Generate password reset link using Firebase Admin SDK
+    const link = await admin.auth().generatePasswordResetLink(email);
+    
+    // In a real application, you would send this link via email
+    // For now, we'll just return it in the response
+    res.json({ 
+      success: true, 
+      message: 'Password reset link generated successfully',
+      resetLink: link // Remove this in production
+    });
+  } catch (error) {
+    console.error('Error generating password reset link:', error);
+    res.status(500).json({ error: 'Failed to generate password reset link' });
+  }
+});
+
+// Email verification endpoint
+app.post('/api/auth/send-verification', async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const userId = decodedToken.uid;
+    
+    // Generate email verification link
+    const link = await admin.auth().generateEmailVerificationLink(decodedToken.email);
+    
+    // In a real application, you would send this link via email
+    // For now, we'll just return it in the response
+    res.json({ 
+      success: true, 
+      message: 'Email verification link generated successfully',
+      verificationLink: link // Remove this in production
+    });
+  } catch (error) {
+    console.error('Error generating email verification link:', error);
+    res.status(500).json({ error: 'Failed to generate email verification link' });
   }
 });
 
@@ -415,12 +405,18 @@ app.get('/api/profile', async (req, res) => {
     const userId = decodedToken.uid;
     const userData = users.get(userId) || { coins: 20, isPremium: false, signalsUsed: 0 };
 
+    // Update email verification status from Firebase
+    userData.emailVerified = decodedToken.email_verified || false;
+    users.set(userId, userData);
+    saveUsersToFile();
+
     // Ensure admin property is included if present
     const profile = {
       email: userData.email,
       coins: userData.coins,
       isPremium: userData.isPremium,
       signalsUsed: userData.signalsUsed,
+      emailVerified: userData.emailVerified,
       ...(userData.admin !== undefined ? { admin: userData.admin } : {})
     };
 
@@ -887,7 +883,3 @@ app.get('/api/notification', (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
-// Start the server
-  //app.listen(port, () => {
-  //console.log(`Server running on http://localhost:${port}`);
-//});

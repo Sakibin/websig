@@ -2,3 +2,15 @@ modules = ["nodejs-20"]
 [[ports]]
 localPort = 6000
 externalPort = 80
+
+[workflows]
+runButton = "Run Server"
+
+[[workflows.workflow]]
+name = "Run Server"
+author = 24131047
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node index.js"
