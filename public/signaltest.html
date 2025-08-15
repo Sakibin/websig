@@ -2,258 +2,258 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title> - Signal Check</title>
+  <title>Signal Check</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- FontAwesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-main: #181818;
-      --bg-card: rgba(30, 30, 40, 0.85);
-      --glass-blur: blur(12px);
+      --primary: #6366f1;
+      --secondary: #4f46e5;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --background: #0f172a;
+      --surface: #1e293b;
+      --text: #f8fafc;
+      --text-secondary: #94a3b8;
+      --border: #334155;
+      --gold: #d4af37;
       --accent: #ffae00;
-      --accent2: #d4af37;
-      --text-main: #fff;
-      --text-muted: #bdbdbd;
-      --border: #292929;
-      --shadow: 0 6px 32px 0 rgba(0,0,0,0.25);
-      --radius: 18px;
-      --input-bg: rgba(24,28,34,0.95);
-      --input-border: #353535;
-      --btn-bg: linear-gradient(90deg, #ffae00 0%, #d4af37 100%);
-      --btn-bg-inactive: #232323;
-      --btn-text: #181818;
-      --btn-text-inactive: #bdbdbd;
-      --btn-shadow: 0 2px 8px #0006;
     }
-    body {
-      background: var(--bg-main);
-      color: var(--text-main);
-      font-family: 'Segoe UI', Arial, sans-serif;
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    /* Sidebar styles */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 250px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 2rem;
+      z-index: 100;
+    }
+    /* Main content styles */
+    .main-content {
+      margin-left: 250px;
+      padding: 2rem;
       min-height: 100vh;
-      background-image: linear-gradient(120deg, #232526 0%, #414345 100%);
+      background: var(--background);
     }
+    /* Header styles */
     .header {
-      background: rgba(20,20,20,0.98);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 18px 22px 12px 22px;
-      border-bottom: 1.5px solid #242424;
-      box-shadow: var(--shadow);
-    }
-    .header .logo {
-      display: flex;
       align-items: center;
+      margin-bottom: 2rem;
     }
-    .logo-img {
-      width: 44px;
-      margin-right: 12px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px #0006;
+    /* Card styles */
+    .card {
+      background: var(--surface);
+      border-radius: 1rem;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+      transition: all 0.3s;
     }
-    .app-title {
-      font-size: 1.35em;
-      font-weight: bold;
-      letter-spacing: 1px;
-      color: var(--accent);
-      text-shadow: 0 2px 8px #0008;
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     }
-    .lang-flag {
-      background: #232323;
-      padding: 7px 14px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      font-size: 1em;
-      margin-right: 12px;
-      color: var(--text-muted);
-      box-shadow: 0 1px 4px #0004;
-    }
-    .profile-pic {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: #333;
-      object-fit: cover;
-      border: 2px solid var(--accent2);
-      margin-left: 14px;
-      box-shadow: 0 2px 8px #0006;
-    }
-    .menu {
-      font-size: 1.3em;
-      margin-left: 14px;
-      color: var(--accent);
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .menu:hover {
-      color: var(--accent2);
-    }
-    .container {
-      max-width: 420px;
-      margin: 38px auto 0 auto;
-      background: var(--bg-card);
-      padding: 32px 28px 28px 28px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: var(--glass-blur);
-      border: 1.5px solid var(--border);
-      position: relative;
-      z-index: 1;
-    }
+    /* Label styles */
     .label {
-      font-size: 1.08em;
-      margin-bottom: 7px;
-      color: var(--accent2);
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
       display: block;
-      font-weight: 500;
-      letter-spacing: 0.5px;
     }
+    /* Button group styles */
     .btn-group {
       display: flex;
-      gap: 12px;
-      margin-bottom: 22px;
       flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
     }
+    /* Button styles */
     .btn {
-      background: var(--btn-bg-inactive);
-      color: var(--btn-text-inactive);
-      border: 1.5px solid var(--input-border);
-      padding: 9px 22px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.18s, box-shadow 0.18s;
-      font-size: 1.08em;
-      font-weight: 500;
-      box-shadow: none;
-      outline: none;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
     }
-    .btn.active, .btn:focus {
-      background: var(--btn-bg);
-      color: var(--btn-text);
-      border-color: var(--accent2);
-      box-shadow: var(--btn-shadow);
+    .btn.active {
+      background: var(--primary);
+      color: var(--text);
+      border-color: var(--primary);
     }
-    .btn:not(.active):hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    .input,
-    .select,
-    textarea {
+    /* Input and select styles */
+    .input, .select, textarea {
       width: 100%;
-      padding: 13px 15px;
-      margin-bottom: 22px;
-      border-radius: 10px;
-      border: 1.5px solid var(--input-border);
-      background: var(--input-bg);
-      color: var(--text-main);
-      font-size: 1.08em;
-      outline: none;
-      box-sizing: border-box;
-      transition: border 0.18s;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      margin-bottom: 1.5rem;
     }
-    .input:focus,
-    .select:focus,
-    textarea:focus {
-      border-color: var(--accent2);
-      box-shadow: 0 0 0 2px #ffae0033;
-    }
-    .select {
-      appearance: none;
-      background: url('data:image/svg+xml;utf8,<svg fill="gray" height="16" viewBox="0 0 20 20" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7.293 7.293a1 1 0 0 1 1.414 0L10 8.586l1.293-1.293a1 1 0 0 1 1.414 1.414l-2 2a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 0-1.414z"/></svg>') no-repeat right 18px center/18px, var(--input-bg);
-      padding-right: 44px;
-    }
-    textarea {
-      min-height: 95px;
-      resize: vertical;
-      font-size: 1.08em;
-      color: var(--accent2);
-      background: var(--input-bg);
-      border: 1.5px solid var(--input-border);
-    }
+    /* Submit button styles */
     .submit-btn {
       width: 100%;
-      background: var(--btn-bg);
-      color: var(--btn-text);
+      padding: 1rem;
+      border-radius: 0.5rem;
       border: none;
-      padding: 13px 0;
-      border-radius: 12px;
-      font-weight: bold;
-      font-size: 1.13em;
+      background: var(--primary);
+      color: var(--text);
+      font-weight: 600;
       cursor: pointer;
-      margin-top: 10px;
-      box-shadow: var(--btn-shadow);
-      transition: filter 0.18s;
-      letter-spacing: 1px;
+      transition: all 0.3s;
     }
     .submit-btn:hover {
-      filter: brightness(1.08);
+      background: var(--secondary);
     }
-    @media (max-width: 600px) {
-      .container {
-        margin: 18px 4px;
-        padding: 16px 4vw 18px 4vw;
+    /* Responsive styles */
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s;
       }
-      .header {
-        padding: 12px 6vw 8px 6vw;
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <div class="header">
-    <div class="logo">
-      <img class="logo-img" src="https://i.ibb.co/rKrQHf7f/New-Project-43-52511-DF.png" alt="Logo" />
-      <span class="app-title"><i class="fas fa-bolt"></i> Cheakup</span>
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+      <img src="https://i.ibb.co/rKrQHf7f/New-Project-43-52511-DF.png" alt="Logo" style="width: 40px; height: 40px;">
+      <span style="color: var(--primary); font-weight: 600; font-size: 1.25rem;">Signal Check</span>
     </div>
-    <div style="display:flex; align-items:center;">
-      <div class="lang-flag">
-        <img src="https://upload.wikimedia.org/wikipedia/en/a/a4/Flag_of_the_United_States.svg" alt="US Flag" width="22" style="margin-right:4px;"> US
-      </div>
-      <span class="menu"><i class="fas fa-bars"></i></span>
-  <!--    <img class="profile-pic" src="https://i.ibb.co/Mn9y9DY/profile-question.png" alt="Profile" /> -->
+    <div style="margin-bottom: 2rem;">
+      <a href="/home.html" class="btn" style="width: 100%; margin-bottom: 0.5rem;">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+      <a href="/signaltest.html" class="btn active" style="width: 100%;">
+        <i class="fas fa-vial"></i> Signal Test
+      </a>
     </div>
-  </div>
+  </nav>
 
   <!-- Main Content -->
-  <div class="container">
-    <!-- Timeframe -->
-    <span class="label"><i class="fas fa-clock"></i> Timeframe</span>
-    <div class="btn-group" id="tf-group">
-      <button class="btn" data-tf="M1"><i class="fas fa-stopwatch"></i> M1</button>
-      <button class="btn active" data-tf="M5"><i class="fas fa-stopwatch"></i> M5</button>
-      <button class="btn" data-tf="M15"><i class="fas fa-stopwatch"></i> M15</button>
-      <button class="btn" data-tf="M30"><i class="fas fa-stopwatch"></i> M30</button>
-      <button class="btn" data-tf="H1"><i class="fas fa-hourglass-half"></i> H1</button>
+  <main class="main-content">
+    <div class="header">
+      <h1 style="color: var(--text); font-size: 1.5rem;">Signal Checker</h1>
+      <button class="btn" onclick="window.location.href='/home.html'">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </button>
     </div>
 
-    <!-- Days -->
-    <span class="label"><i class="fas fa-calendar-day"></i> Date</span>
-    <input type="date" class="input" value="2025-06-23" />
+    <div class="card">
+      <!-- Timeframe -->
+      <div class="form-group">
+        <label class="label">Timeframe</label>
+        <div class="btn-group" id="tf-group">
+          <button class="btn" data-tf="M1"><i class="fas fa-stopwatch"></i> M1</button>
+          <button class="btn active" data-tf="M5"><i class="fas fa-stopwatch"></i> M5</button>
+          <button class="btn" data-tf="M15"><i class="fas fa-stopwatch"></i> M15</button>
+          <button class="btn" data-tf="M30"><i class="fas fa-stopwatch"></i> M30</button>
+          <button class="btn" data-tf="H1"><i class="fas fa-hourglass-half"></i> H1</button>
+        </div>
+      </div>
 
-    <!-- Gale -->
-    <span class="label"><i class="fas fa-sync-alt"></i> Gale</span>
-    <div class="btn-group" id="gale-group">
-      <button class="btn" data-gale="0"><i class="fas fa-ban"></i> No Gale</button>
-      <button class="btn active" data-gale="1"><i class="fas fa-level-up-alt"></i> G1</button>
-      <button class="btn" data-gale="2"><i class="fas fa-level-up-alt"></i> G2</button>
-      <button class="btn" data-gale="3"><i class="fas fa-level-up-alt"></i> G3</button>
+      <!-- Date -->
+      <div class="form-group">
+        <label class="label">Date</label>
+        <input type="date" class="input" value="2025-06-23">
+      </div>
+
+      <!-- Gale -->
+      <div class="form-group">
+        <label class="label">Gale</label>
+        <div class="btn-group" id="gale-group">
+          <button class="btn" data-gale="0"><i class="fas fa-ban"></i> No Gale</button>
+          <button class="btn active" data-gale="1"><i class="fas fa-level-up-alt"></i> G1</button>
+          <button class="btn" data-gale="2"><i class="fas fa-level-up-alt"></i> G2</button>
+          <button class="btn" data-gale="3"><i class="fas fa-level-up-alt"></i> G3</button>
+        </div>
+      </div>
+
+      <!-- Broker -->
+      <div class="form-group">
+        <label class="label">Select Broker</label>
+        <select class="select">
+          <option>IQ Option</option>
+          <option>Pocket Option</option>
+          <option>Quotex</option>
+          <option>Binomo</option>
+        </select>
+      </div>
+
+      <!-- Signals -->
+      <div class="form-group">
+        <label class="label">Signals</label>
+        <textarea placeholder="Paste the signals here" rows="6"></textarea>
+      </div>
+
+      <button class="submit-btn">
+        <i class="fas fa-paper-plane"></i> Check Signals
+      </button>
     </div>
+  </main>
 
-    <!-- Select Broker -->
-    <span class="label"><i class="fas fa-building-columns"></i> Select Broker</span>
-    <select class="select">
-      <option>IQ Option</option>
-      <option>Pocket Option</option>
-      <option>Quotex</option>
+  <!-- Notification -->
+  <div id="popupNoti" style="display:none; position:fixed; top:30px; left:50%; transform:translateX(-50%); background: var(--surface); color: var(--primary); border: 1px solid var(--primary); border-radius: 0.5rem; padding: 1rem 2rem; font-size: 0.875rem; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    System under maintenance
+  </div>
+
+  <script>
+    // Button group toggle logic
+    document.querySelectorAll('.btn-group').forEach(group => {
+      group.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn')) {
+          group.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+          e.target.classList.add('active');
+        }
+      });
+    });
+
+    // Submit button popup logic
+    document.querySelector('.submit-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const popup = document.getElementById('popupNoti');
+      popup.style.display = 'block';
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 2200);
+    });
+  </script>
+</body>
+</html>
       <option>Binomo</option>
     </select>
 

@@ -1,4 +1,3 @@
-
 const approve_ID = "signalweb";
 const approve_KEY = "FBX7858";
 const axios = require('axios');
@@ -7,6 +6,7 @@ const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
 const path = require('path');
 const fs = require('fs');
+const nodemailer = require('nodemailer');
 
 //hj
 // Initialize Firebase Admin SDK
@@ -28,7 +28,7 @@ admin.initializeApp({
 });
 
 const app = express();
-const port = 6000;
+const port = 4042;
 
 // Simple in-memory user store (in production, use a database)
 const users = new Map();
@@ -36,6 +36,29 @@ const USERS_DB_PATH = path.join(__dirname, 'users.json');
 const CHAT_DIR = path.join(__dirname, 'chat');
 const NOTIF_PATH = path.join(__dirname, 'notifications.json');
 if (!fs.existsSync(CHAT_DIR)) fs.mkdirSync(CHAT_DIR);
+
+// Update the nodemailer transporter configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    type: 'OAuth2',
+    user: 'mdsinha62@gmail.com',
+    clientId: '732867500543-5ap3a7ta4kgin9kvdpfcqiefgi8qr22h.apps.googleusercontent.com',
+    clientSecret: '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',
+    refreshToken: '1//04MvmFSqXvsgcCgYIARAAGAQSNwF-L9IrHlyPDtgi758FTq3kVc1Valul79_pUM2cf6xIbdpTmj5blg2-CfTeNgxUuLDT4nU3mBU',
+    accessToken: null, // Will be automatically obtained
+    expires: 1484314697598
+  }
+});
+
+// Test the email connection on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('Email configuration error:', error);
+  } else {
+    console.log('Email server is ready to send messages');
+  }
+});
 
 // Helper: Get chat file path for user (by email)
 function getChatFilePathByEmail(email) {
@@ -348,19 +371,109 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 
   try {
-    // Generate password reset link using Firebase Admin SDK
+    // First verify if the email exists in Firebase
+    const userRecord = await admin.auth().getUserByEmail(email)
+      .catch(error => {
+        if (error.code === 'auth/user-not-found') {
+          throw new Error('No user found with this email address');
+        }
+        throw error;
+      });
+
+    // Generate password reset link
     const link = await admin.auth().generatePasswordResetLink(email);
     
-    // In a real application, you would send this link via email
-    // For now, we'll just return it in the response
-    res.json({ 
-      success: true, 
-      message: 'Password reset link generated successfully',
-      resetLink: link // Remove this in production
-    });
+    // Send email with reset link
+    const mailOptions = {
+      from: {
+        name: 'Future Signals',
+        address: 'mdsinha62@gmail.com'
+      },
+      to: email,
+      subject: 'Reset Your Password - Future Signals',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Reset Your Password</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: Arial, sans-serif;">
+          <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td align="center" style="padding: 40px 0;">
+                <table role="presentation" style="width: 600px; max-width: 90%; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <tr>
+                    <td style="padding: 40px;">
+                      <!-- Header with Logo -->
+                      <div style="text-align: center; margin-bottom: 30px;">
+                        <img src="https://i.ibb.co/rKrQHf7f/New-Project-43-52511-DF.png" alt="Future Signals" style="width: 120px; height: auto;">
+                      </div>
+                      
+                      <!-- Main Content -->
+                      <div style="color: #1f2937; line-height: 1.6;">
+                        <h1 style="color: #6366f1; font-size: 24px; margin-bottom: 20px; text-align: center;">Reset Your Password</h1>
+                        
+                        <p style="color: #4b5563; margin-bottom: 24px;">Hello,</p>
+                        
+                        <p style="color: #4b5563; margin-bottom: 24px;">We received a request to reset your password for your Future Signals account. Click the button below to create a new password:</p>
+                        
+                        <!-- Reset Button -->
+                        <div style="text-align: center; margin: 32px 0;">
+                          <a href="${link}" style="display: inline-block; background-color: #6366f1; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 6px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Reset Password</a>
+                        </div>
+                        
+                        <p style="color: #4b5563; margin-bottom: 24px;">If you didn't request this password reset, you can safely ignore this email. Your password won't be changed unless you click the button above.</p>
+                        
+                        <p style="color: #4b5563; font-size: 14px;">For security reasons, this link will expire in 1 hour.</p>
+                      </div>
+                      
+                      <!-- Footer -->
+                      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px;">
+                        <p style="margin-bottom: 10px;">© ${new Date().getFullYear()} Future Signals. All rights reserved.</p>
+                        <p>This is an automated message, please do not reply to this email.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `
+    };
+
+    // Send the email with promise handling
+    try {
+      await new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.error('Email send error:', error);
+            reject(error);
+          } else {
+            console.log('Password reset email sent:', info.response);
+            resolve(info);
+          }
+        });
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Password reset instructions have been sent to your email'
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      throw new Error('Failed to send password reset email');
+    }
+
   } catch (error) {
-    console.error('Error generating password reset link:', error);
-    res.status(500).json({ error: 'Failed to generate password reset link' });
+    console.error('Password reset error:', error);
+    res.status(500).json({ 
+      error: error.message || 'Failed to process password reset request',
+      details: error.code || 'unknown_error'
+    });
   }
 });
 

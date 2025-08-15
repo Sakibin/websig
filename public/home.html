@@ -4,484 +4,460 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FUTURE SIGNALS</title>
-
-   <link rel="icon" href=
-  "https://i.ibb.co/rKrQHf7f/New-Project-43-52511-DF.png"
-          type="image/x-icon" />
-  
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet" />
-  <link href="https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css" rel="stylesheet" />
-  <script src="https://kit.fontawesome.com/dbc9d516d6.js" crossorigin="anonymous"></script>
+  <link rel="icon" href="https://i.ibb.co/rKrQHf7f/New-Project-43-52511-DF.png" type="image/x-icon" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     :root {
-      --bg-dark: #0d0d0d;
-      --bg-card: #1a1a1a;
-      --text-light: #ffffff;
+      --primary: #6366f1;
+      --secondary: #4f46e5;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --background: #0f172a;
+      --surface: #1e293b;
+      --text: #f8fafc;
+      --text-secondary: #94a3b8;
+      --border: #334155;
       --gold: #d4af37;
-      --highlight: #ffcc00;
       --accent: #ffae00;
-      --border-dark: #333;
-      --blue-glow: #007bff;
+      --bg-dark: #181824;
+      --bg-card: #23243a;
+      --highlight: #00ff99;
+      --border-dark: #44445a;
     }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 2rem;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-light);
-      /* Add eagle background */
-      background-image: url('eagle.png');
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: 400px auto;
-      background-attachment: fixed;
-      opacity: 1;
+      font-family: 'Inter', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      min-height: 100vh;
     }
-    /* Optional: subtle overlay for readability */
-    body::before {
-      content: "";
+    .sidebar {
       position: fixed;
-      inset: 0;
-      background: rgba(13,13,13,0.85);
-      z-index: 0;
-      pointer-events: none;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 250px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 2rem;
+      z-index: 1001;
     }
-    #mainContent, #loginForm, #userAvatar, #customAlert {
-      position: relative;
-      z-index: 1;
-    }
-
-  label {
-     color: var(--gold);
-}
-
-    .h1 {
-      position: relative;
-      top: 25px;
-      text-align: center;
-      font-size: 2rem;
-      color: var(--gold);
-      font-weight: 1rem;
-      margin-top: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .section-title {
-      font-size: 1.25rem;
-      color: var(--highlight);
-      font-weight: 400;
-      margin: 2rem 0 1rem;
-    }
-
-    .select-all {
-      background-color: transparent;
-      color: var(--gold);
-      border: 1px solid var(--gold);
-      padding: 0.35rem 1rem;
-      cursor: pointer;
-      border-radius: 6px;
-      margin-left: 0.5rem;
-      transition: background 0.3s;
-    }
-
-    .select-all:hover {
-      background: var(--gold);
-      color: var(--bg-dark);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 0.1rem;
-    }
-
-    .notifBell {
-      position: relative;
-      left: 50px;
-    }
-    
-    .pair {
-      background: var(--bg-card);
-      padding: 0.6rem;
-      border-radius: 10px;
+    .logo {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      border: 1px solid var(--border-dark);
-      transition: 0.2s ease-in-out;
-      transform: scale(0.8);
+      gap: 1rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 3rem;
+      color: var(--primary);
     }
-
-    .pair:hover {
-      border-color: var(--highlight);
-      box-shadow: 0 0 8px var(--highlight);
+    .nav-links {
+      list-style: none;
     }
-
-    .pair input[type="checkbox"]:checked + label {
-      color: var(--gold); 
-      font-weight: 600;
+    .nav-item {
+      margin-bottom: 0.5rem;
     }
-
-    .pair input[type="checkbox"]:checked {
-      box-shadow: 0 0 0 2px var(--gold);
-    }
-
-    .pair.selected {
-      border-color: var(--gold);
-      box-shadow: 0 0 12px var(--gold);
-    }
-
-    .pair label {
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    input[type="checkbox"] {
-      transform: scale(1.3);
-      accent-color: var(--gold);
-    }
-
-    form input,
-    form select,
-    button {
-      display: block;
-      width: 100%;
-      margin-top: 1rem;
-      margin-bottom: 1rem;
-      padding: 0.8rem;
-      border-radius: 6px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-dark);
-      color: var(--gold);
-      font-size: 1rem;
-    }
-
-    #start,
-    #end,
-    #duration {
-      width: 80%;
-      border: 1px solid var(--gold);
-      box-shadow: 0 0 10px var(--gold);
-      color: var(--gold);
-    }
-
-    #start:focus,
-    #end:focus,
-    #duration:focus,
-    #strategy:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 10px var(--gold);
-      color: var(--gold);
-    }
-
-    select option {
-      background-color: var(--bg-dark);
-      color: deepskyblue;
-    }
-
-    button[type="submit"],
-    #copyBtn {
-      background: linear-gradient(45deg, var(--gold), var(--accent));
-      color: var(--bg-dark);
-      border: none;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-
-    button[type="submit"]:hover,
-    #copyBtn:hover {
-      filter: brightness(1.1);
-      cursor: pointer;
-    }
-
-    table {
-      width: 100%;
-      margin-top: 1.5rem;
-      border-collapse: collapse;
-      background: var(--bg-card);
-      border: 1px solid var(--border-dark);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    th,
-    td {
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
       padding: 1rem;
-      border: 1px solid var(--border-dark);
-      text-align: center;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 0.5rem;
+      transition: all 0.3s;
     }
-
-    th {
-      background-color: var(--border-dark);
-      color: var(--highlight);
+    .nav-link:hover, .nav-link.active {
+      background: var(--primary);
+      color: var(--text);
     }
-
-    .buy {
-      color: #00ff99;
-      font-weight: bold;
+    .main-content {
+      margin-left: 250px;
+      padding: 2rem;
+      min-height: 100vh;
     }
-
-    .sell {
-      color: #ff5555;
-      font-weight: bold;
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
     }
-
-    #loader {
-      display: none;
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface);
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--border);
+    }
+    .search-bar input {
+      background: none;
+      border: none;
+      color: var(--text);
+      outline: none;
+      width: 300px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: var(--surface);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      font-size: 1.25rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--text);
+    }
+    .btn-primary:hover {
+      background: var(--secondary);
+    }
+    .stats {
+      display: flex;
+      gap: 1rem;
       margin-top: 1rem;
+    }
+    .stat {
+      background: rgba(99, 102, 241, 0.1);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .profile-card {
+      background: var(--surface);
+      border-radius: 1rem;
+      padding: 2rem;
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
       text-align: center;
     }
-
-    #loader span {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      margin: 0 5px;
-      background-color: var(--gold);
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
-      animation: bounce 1.2s infinite ease-in-out both;
+      border: 4px solid var(--primary);
+      margin: 0 auto 1rem;
+      object-fit: cover;
     }
-
-    #loader span:nth-child(2) {
-      animation-delay: 0.2s;
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
     }
-
-    #loader span:nth-child(3) {
-      animation-delay: 0.4s;
+    .profile-role {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
     }
-
-    @keyframes bounce {
-      0%, 80%, 100% {
-        transform: scale(0);
-      } 40% {
-        transform: scale(1);
+    .social-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .btn-social {
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.75rem 2rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    .btn-social:hover {
+      background: var(--primary);
+      transform: translateY(-2px);
+    }
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+        z-index: 1000;
+        transition: transform 0.3s ease;
       }
+      .sidebar.active { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .header { position: relative; }
+      .menu-toggle {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        cursor: pointer;
+        padding: 0.5rem;
+        position: absolute;
+        left: 1rem;
+      }
+      .menu-toggle span {
+        width: 24px;
+        height: 2px;
+        background: var(--text);
+        transition: 0.3s;
+      }
+      .menu-toggle.active span:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+      }
+      .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+      }
+      .menu-toggle.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -5px);
+      }
+      .search-bar { margin-left: 4rem; }
     }
-
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+      .search-bar { margin-left: 0; width: 100%; }
+      .search-bar input { width: 100%; }
+      .btn { width: 100%; }
+      .stats { flex-direction: column; }
+      .stat { width: 100%; text-align: center; }
+      .profile-card { padding: 1.5rem; }
+      .profile-avatar { width: 100px; height: 100px; }
+    }
+    @media (max-width: 480px) {
+      .main-content { padding: 1rem; }
+      .card { padding: 1rem; }
+      .card-header { flex-direction: column; text-align: center; }
+      .card-icon { margin: 0 auto; }
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+    .overlay.active { display: block; }
+    /* Custom alert */
     .custom-alert {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--bg-card);
-      color: var(--gold);
-      border: 1px solid var(--gold);
-      box-shadow: 0 0 10px var(--gold);
-      padding: 1rem 1.5rem;
-      border-radius: 10px;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: var(--text);
+      padding: 1rem 2rem;
+      border-radius: 0.5rem;
       font-weight: bold;
-      z-index: 9999;
+      z-index: 2000;
       opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.4s ease, transform 0.4s ease;
       pointer-events: none;
+      transition: opacity 0.3s;
     }
-
     .custom-alert.show {
       opacity: 1;
-      transform: translateY(0);
       pointer-events: auto;
     }
+  </style>
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar">
+    <div class="logo">
+      <i class="fas fa-cube"></i>
+      <span>Future Signals</span>
+    </div>
+    <ul class="nav-links">
+      <li class="nav-item">
+        <a href="#" class="nav-link active">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link" onclick="goToCoinSignal()">
+          <i class="fas fa-coins"></i>
+          <span>QUOTEX OTC</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link" onclick="goToPRIMESignals()">
+          <i class="fas fa-rocket"></i>
+          <span>PRO SIGNALS</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link" onclick="goToGPT()">
+          <i class="fas fa-robot"></i>
+          <span>GPT SIGNAL</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link" onclick="goToAdmin()">
+          <i class="fas fa-user-shield"></i>
+          <span>SUPPORT</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="nav-link" onclick="upgradeToPremium()">
+          <i class="fas fa-crown"></i>
+          <span>GET PREMIUM</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
 
-    @keyframes notifPopIn {
-      0% { transform: translateY(-30px) scale(0.9); opacity: 0; }
-      80% { transform: translateY(5px) scale(1.04); opacity: 1; }
-      100% { transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-    @media screen and (max-width: 768px) {
-      body {
-        padding: 1rem;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      .grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      form input,
-      form select,
-      button {
-        font-size: 0.9rem;
-      }
-    }
-  </style>  
-
-  </head>
-  <body>
-    <script src="snow.js"></script>
-    <!-- User Avatar Corner -->
-    <div id="userAvatar" style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: none;">
-      <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="toggleUserMenu()">
-
-        <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 8px 12px; border-radius: 25px; border: 1px solid var(--gold);">
-          <span id="coinCount" style="color: var(--gold); font-weight: bold; font-size: 14px;">0</span>
-          <i class="fas fa-coins" style="color: var(--gold); font-size: 14px;"></i>
-        </div>
-        <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-card); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center;">
-          <i class="fas fa-user" style="color: var(--gold); font-size: 18px;"></i>
-        </div>
+  <main class="main-content" id="mainContent">
+    <!-- Header -->
+    <header class="header">
+      <div class="menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search...">
+      </div>
+      <button class="btn btn-primary" onclick="goToCoinSignal()">
+        <i class="fas fa-plus"></i>
+        <span>Get Signals</span>
+      </button>
+    </header>
+    <div class="overlay"></div>
 
-      <!-- Dropdown Menu -->
-      <div id="userMenu" style="position: absolute; top: 50px; right: 0; background: var(--bg-card); border: 1px solid var(--gold); border-radius: 10px; padding: 15px; min-width: 200px; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); display: none;">
-        <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-dark);">
-          <div id="userEmail" style="color: var(--gold); font-size: 14px; margin-bottom: 5px;"></div>
-          <div id="userStatus" style="color: var(--highlight); font-size: 12px;"></div>
-          <div id="emailVerificationStatus" style="color: #ff4444; font-size: 12px; margin-top: 5px; display: none;">
-            <i class="fas fa-exclamation-triangle" style="margin-right: 5px;"></i>Email not verified
+    <!-- Add centerNavBtns back -->
+    <div id="centerNavBtns" style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+      <button id="coinSignalBtn" class="btn btn-primary">
+        <i class="fas fa-coins"></i> QUOTEX OTC
+      </button>
+      <button id="primeSignalsBtn" class="btn btn-primary">
+        <i class="fas fa-rocket"></i> PRO SIGNALS
+      </button>
+      <button id="gptBtn" class="btn btn-primary">
+        <i class="fas fa-robot"></i> GPT SIGNAL
+      </button>
+      <button id="binolaBtn" class="btn btn-primary">
+        <i class="fas fa-dice"></i> BINOLA
+      </button>
+      <button id="signalTestBtn" class="btn btn-primary">
+        <i class="fas fa-vial"></i> SIGNAL TEST
+      </button>
+      <button id="getPremiumBtn" class="btn btn-primary">
+        <i class="fas fa-crown"></i> GET PREMIUM
+      </button>
+      <button id="adminBtn" class="btn btn-primary">
+        <i class="fas fa-user-shield"></i> SUPPORT
+      </button>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff"
+           alt="User"
+           class="profile-avatar">
+      <h2 class="profile-name" id="userEmail">User</h2>
+      <p class="profile-role" id="userStatus">Status</p>
+      <div class="social-buttons">
+        <a href="https://github.com/yourusername" class="btn-social">
+          <i class="fab fa-github"></i> GitHub
+        </a>
+        <a href="https://t.me/x_prime01" class="btn-social">
+          <i class="fab fa-telegram"></i> Telegram
+        </a>
+      </div>
+      <div style="margin-top:1rem;">
+        <span id="coinCount" class="stat" style="background:rgba(212,175,55,0.1);color:var(--gold);font-weight:bold;">0 Coins</span>
+      </div>
+      <div id="emailVerificationStatus" style="color:#ff4444; font-size:12px; margin-top:5px; display:none;">
+        <i class="fas fa-exclamation-triangle" style="margin-right:5px;"></i>Email not verified
+      </div>
+      <button id="verifyEmailBtn" onclick="sendEmailVerification()" class="btn btn-primary" style="margin-top:10px;display:none;">
+        <i class="fas fa-envelope-check"></i> Verify Email
+      </button>
+      <button id="upgradeBtn" onclick="upgradeToPremium()" class="btn btn-primary" style="margin-top:10px;display:none;">
+        <i class="fas fa-crown"></i> Get Premium
+      </button>
+      <button onclick="logout()" class="btn" style="background:var(--danger);color:white;margin-top:10px;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="grid">
+      <!-- Signal Maker Card -->
+      <div class="card" id="signalMakerSection" style="display:none;">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(99,102,241,0.1);color:var(--primary);">
+            <i class="fas fa-coins"></i>
           </div>
+          <h3>Signal Maker</h3>
         </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button id="upgradeBtn" onclick="upgradeToPremium()" style="background: var(--gold); color: var(--bg-dark); border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; display: none;">
-            <i class="fas fa-crown" style="margin-right: 5px;"></i>Get Premium
-          </button>
-          <button id="verifyEmailBtn" onclick="sendEmailVerification()" style="background: var(--accent); color: var(--bg-dark); border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; display: none;">
-            <i class="fas fa-envelope-check" style="margin-right: 5px;"></i>Verify Email
-          </button>
-          <button onclick="logout()" style="background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer;">
-            <i class="fas fa-sign-out-alt" style="margin-right: 5px;"></i>Logout
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Notification Bell Icon -->
-    <div id="notifBell" style="display:none; position:fixed; top:30px; right:180px; z-index:1100; cursor:pointer;">
-      <i class="fas fa-bell" style="font-size: 25px; color: var(--gold);"></i>
-      <span id="notifDot" style="display:none; position:absolute; top:2px; right:2px; width:10px; height:10px; background:#ff4444; border-radius:50%;"></span>
-    </div>
-
-    <!-- Notification Popup -->
-    <div id="notifPopup" style="display:none; position:fixed; top:70px; right:30px; background:rgba(30,30,40,0.97); color:#ffae00; border:2px solid #d4af37; border-radius:14px; padding:22px 32px 18px 32px; font-size:1.12em; font-weight:bold; z-index:1200; box-shadow:0 4px 24px #0008; min-width:260px; max-width:350px; animation: notifPopIn 0.5s;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <i class="fas fa-bell"></i>
-        <span id="notifMsg">System notification</span>
-      </div>
-      <button onclick="closeNotifPopup()" style="margin-top:18px; background:var(--gold); color:var(--bg-dark); border:none; border-radius:8px; padding:6px 18px; font-weight:bold; cursor:pointer; float:right;">Close</button>
-    </div>
-
-    <style>
-      @keyframes notifPopIn {
-        0% { transform: translateY(-30px) scale(0.9); opacity: 0; }
-        80% { transform: translateY(5px) scale(1.04); opacity: 1; }
-        100% { transform: translateY(0) scale(1); opacity: 1; }
-      }
-    </style>
-
-    <!-- Login Form -->
-    <div id="loginForm" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-card); padding: 1rem; padding-right: 3rem; border-radius: 10px; margin: -1rem; border: 1px solid var(--gold); z-index: 1001;">
-      <h2 style="color: var(--gold); text-align: center; margin-bottom: 1rem;">Login to Access Signals</h2>
-      <input type="email" id="email" placeholder="Email" style="width: 100%; margin-bottom: 1rem; padding: 0.8rem; border: 1px solid var(--gold); background: var(--bg-dark); color: var(--gold); border-radius: 4px;">
-      <input type="password" id="password" placeholder="Password" style="width: 100%; margin-bottom: 1rem; padding: 0.8rem; border: 1px solid var(--gold); background: var(--bg-dark); color: var(--gold); border-radius: 4px;">
-      <button onclick="login()" style="width: 100%; background: var(--gold); color: var(--bg-dark); border: none; padding: 0.8rem; border-radius: 4px; font-weight: bold; margin-bottom: 0.5rem;">Login</button>
-      <button onclick="register()" style="width: 100%; background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 0.8rem; border-radius: 4px; margin-bottom: 0.5rem;">Register (Get 20 Free Coins)</button>
-      
-      <!-- Password Reset Section -->
-      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-dark);">
-        <button onclick="showPasswordReset()" style="width: 100%; background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 0.6rem; border-radius: 4px; font-size: 0.9rem;">
-          <i class="fas fa-key" style="margin-right: 5px;"></i>Forgot Password?
-        </button>
-        
-        <div id="passwordResetSection" style="display: none; margin-top: 1rem;">
-          <input type="email" id="resetEmail" placeholder="Enter your email for password reset" style="width: 100%; margin-bottom: 0.5rem; padding: 0.8rem; border: 1px solid var(--accent); background: var(--bg-dark); color: var(--gold); border-radius: 4px;">
-          <button onclick="sendPasswordReset()" style="width: 100%; background: var(--accent); color: var(--bg-dark); border: none; padding: 0.8rem; border-radius: 4px; font-weight: bold;">Send Reset Link</button>
-        </div>
-      </div>
-      
-      <div id="authMessage" style="margin-top: 1rem; text-align: center; color: #ff4444;"></div>
-    </div>
-
-    
-      <div id="mainContent" style="display: none; padding-top: 20px;">
-        <div class="h1" style="font-size: 21px">
-      <script type="text/javascript">
-      farbbibliothek = new Array();
-      farbbibliothek[0] = new Array("#FF0000","#FF1100","#FF2200","#FF3300","#FF4400","#FF5500","#FF6600","#FF7700","#FF8800","#FF9900","#FFaa00","#FFbb00","#FFcc00","#FFdd00","#FFee00","#FFff00","#FFee00","#FFdd00","#FFcc00","#FFbb00","#FFaa00","#FF9900","#FF8800","#FF7700","#FF6600","#FF5500","#FF4400","#FF3300","#FF2200","#FF1100");
-      farbbibliothek[1] = new Array("#00FF00","#000000","#00FF00","#00FF00");
-      farbbibliothek[2] = new Array("#00FF00","#FF0000","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00","#00FF00");
-      farbbibliothek[3] = new Array("#FF0000","#FF4000","#FF8000","#FFC000","#FFFF00","#C0FF00","#80FF00","#40FF00","#00FF00","#00FF40","#00FF80","#00FFC0","#00FFFF","#00C0FF","#0080FF","#0040FF","#0000FF","#4000FF","#8000FF","#C000FF","#FF00FF","#FF00C0","#FF0080","#FF0040");
-      farbbibliothek[4] = new Array("#FF0000","#EE0000","#DD0000","#CC0000","#BB0000","#AA0000","#990000","#880000","#770000","#660000","#550000","#440000","#330000","#220000","#110000","#000000","#110000","#220000","#330000","#440000","#550000","#660000","#770000","#880000","#990000","#AA0000","#BB0000","#CC0000","#DD0000","#EE0000");
-      farbbibliothek[5] = new Array("#000000","#000000","#000000","#FFFFFF","#FFFFFF","#FFFFFF");
-      farbbibliothek[6] = new Array("#0000FF","#FFFF00");
-      farben = farbbibliothek[4];
-      function farbschrift(){for(var b=0;b<Buchstabe.length;b++){document.all["a"+b].style.color=farben[b]}farbverlauf()}function string2array(b){Buchstabe=new Array();while(farben.length<b.length){farben=farben.concat(farben)}k=0;while(k<=b.length){Buchstabe[k]=b.charAt(k);k++}}function divserzeugen(){for(var b=0;b<Buchstabe.length;b++){document.write("<span id='a"+b+"' class='a"+b+"'>"+Buchstabe[b]+"</span>")}farbschrift()}var a=1;function farbverlauf(){for(var b=0;b<farben.length;b++){farben[b-1]=farben[b]}farben[farben.length-1]=farben[-1];setTimeout("farbschrift()",30)}var farbsatz=1;function farbtauscher(){farben=farbbibliothek[farbsatz];while(farben.length<text.length){farben=farben.concat(farben)}farbsatz=Math.floor(Math.random()*(farbbibliothek.length-0.0001))}setInterval("farbtauscher()",5000);
-
-      text= "♛ Golden Eagle ♛"; 
-      string2array(text);
-      divserzeugen();
-      </script>
-      </div>
-      
-<h4>© Powered by SECRET SOLUTION YT</h4>
-
-      <!-- Centered Navigation Buttons -->      
-      <div id="centerNavBtns" style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 16px 0;">
-        <button id="coinSignalBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
-          <i class="fas fa-coins" style="margin-right: 8px;"></i> QUOTEX OTC
-        </button>
-        <button id="primeSignalsBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
-          <i class="fas fa-rocket" style="margin-right: 8px;"></i> PRO SIGNALS
-        </button>
-        <button id="gptBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
-          <i class="fas fa-robot" style="margin-right: 8px;"></i> GPT SIGNAL
-        </button>
-        <button id="binolaBtn" style="display:block; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
-          <i class="fas fa-dice" style="margin-right: 8px;"></i> BINOLA
-        </button>
-        <button id="signalTestBtn" style="display:block; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
-          <i class="fas fa-vial" style="margin-right: 8px;"></i> SIGNAL TEST
-        </button>
-        <button id="getPremiumBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
-          <i class="fas fa-crown" style="margin-right: 8px;"></i> GET PREMIUM
-        </button>
-        <button id="adminBtn" style="display:none; min-width:200px; background: linear-gradient(45deg, var(--gold), var(--accent)); color: var(--bg-dark); border: none; padding: 14px 0; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;">
-          <i class="fas fa-user-shield" style="margin-right: 8px;"></i> SUPPORT
-        </button>
-      </div>
-
-      <!-- Signal Maker Section (hidden by default) -->
-      <div id="signalMakerSection" style="display:none;">
         <form id="signalForm">
           <label for="start"><i class="fas fa-clock"></i> START TIME</label>
-          <input type="time" id="start" required />
-
+          <input type="time" id="start" required style="width:100%;margin-bottom:0.5rem;" />
           <label for="end"><i class="fas fa-clock"></i> END TIME</label>
-          <input type="time" id="end" required />
-
+          <input type="time" id="end" required style="width:100%;margin-bottom:0.5rem;" />
           <label for="duration"><i class="fas fa-hourglass-half"></i> Duration (Days)</label>
-          <input type="number" id="duration" value="5" required />
-
+          <input type="number" id="duration" value="5" required style="width:100%;margin-bottom:0.5rem;" />
           <label for="strategy"><i class="fas fa-cogs"></i> Strategy:</label>
-          <select id="strategy">
+          <select id="strategy" style="width:100%;margin-bottom:0.5rem;">
             <option value="normal">Normal</option>
             <option value="martingale">Martingale</option>
             <option value="trend">Trend Following</option>
           </select>
-
           <input type="hidden" id="currency_pairs" value="" />
-        </form>
-
-        <div class="section">
-          <div class="section-title">
-            OTC MARKET (QUOTEX)
-            <button class="select-all" onclick="toggleSelect('otc', this)">SELECT ALL</button>
+          <div class="section" style="margin-top:1rem;">
+            <div class="section-title" style="margin-bottom:0.5rem;">
+              OTC MARKET (QUOTEX)
+              <button class="btn btn-primary" type="button" style="float:right;padding:0.3rem 1rem;font-size:0.9em;" onclick="toggleSelect('otc', this)">SELECT ALL</button>
+            </div>
+            <div class="grid" id="otc" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;"></div>
           </div>
-          <div class="grid" id="otc"></div>
-        </div>
-
-        <button type="submit" form="signalForm">➻ Get Signals</button>
-
-        <div id="loader"><span></span><span></span><span></span></div>
-
-        <div id="results">
-          <button onclick="copySignals()" id="copyBtn" style="display:none;">Copy Signals</button>
-          <table id="signalsTable" style="display:none;">
+          <button type="submit" class="btn btn-primary" style="margin-top:1rem;width:100%;">➻ Get Signals</button>
+        </form>
+        <div id="loader" style="display:none;margin:1rem auto;text-align:center;"><span>Loading...</span></div>
+        <div id="results" style="margin-top:1rem;">
+          <button onclick="copySignals()" id="copyBtn" class="btn btn-primary" style="display:none;margin-bottom:1rem;">Copy Signals</button>
+          <table id="signalsTable" style="display:none;width:100%;background:var(--surface);color:var(--text);border-radius:0.5rem;">
             <thead>
               <tr>
                 <th>Currency Pair</th>
@@ -493,496 +469,662 @@
           </table>
         </div>
       </div>
-
-      <div id="customAlert" class="custom-alert"></div>
+      <!-- Other dashboard cards (static info or navigation) -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(16,185,129,0.1);color:var(--success);">
+            <i class="fas fa-rocket"></i>
+          </div>
+          <h3>PRO SIGNALS</h3>
+        </div>
+        <p>Access premium signals for advanced trading.</p>
+        <div class="stats">
+          <span class="stat"><i class="fas fa-crown"></i> Premium Only</span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:1rem;" onclick="goToPRIMESignals()">Go</button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(245,158,11,0.1);color:var(--warning);">
+            <i class="fas fa-robot"></i>
+          </div>
+          <h3>GPT SIGNAL</h3>
+        </div>
+        <p>AI-powered signal generation for smarter trades.</p>
+        <div class="stats">
+          <span class="stat"><i class="fas fa-bolt"></i> Premium Only</span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:1rem;" onclick="goToGPT()">Go</button>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(239,68,68,0.1);color:var(--danger);">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <h3>SUPPORT</h3>
+        </div>
+        <p>Contact admin or get help via Telegram.</p>
+        <div class="stats">
+          <span class="stat"><i class="fas fa-headset"></i> 24/7 Support</span>
+        </div>
+        <button class="btn btn-primary" style="margin-top:1rem;" onclick="goToAdmin()">Contact</button>
+      </div>
+      <!-- Market/Signal Type Cards -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(99,102,241,0.1);color:var(--primary);">
+            <i class="fas fa-globe"></i>
+          </div>
+          <h3>Forex Market</h3>
+        </div>
+        <p>Major currency pairs with high liquidity and tight spreads.</p>
+        <div class="stats">
+          <span class="stat"><i class="fas fa-coins"></i> 20+ Pairs</span>
+          <span class="stat"><i class="fas fa-clock"></i> 24/5</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(245,158,11,0.1);color:var(--warning);">
+            <i class="fab fa-btc"></i>
+          </div>
+          <h3>Crypto Market</h3>
+        </div>
+        <p>Trade top cryptocurrencies with real-time signals.</p>
+        <div class="stats">
+          <span class="stat"><i class="fas fa-coins"></i> 10+ Coins</span>
+          <span class="stat"><i class="fas fa-clock"></i> 24/7</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(16,185,129,0.1);color:var(--success);">
+            <i class="fas fa-store"></i>
+          </div>
+          <h3>OTC Market</h3>
+        </div>
+        <p>Weekend trading with exclusive OTC pairs and signals.</p>
+        <div class="stats">
+          <span class="stat"><i class="fas fa-coins"></i> 15+ OTC Pairs</span>
+          <span class="stat"><i class="fas fa-calendar-week"></i> Sat-Sun</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(239,68,68,0.1);color:var(--danger);">
+            <i class="fas fa-signal"></i>
+          </div>
+          <h3>Signal Types</h3>
+        </div>
+        <p>Normal, Martingale, and Trend Following strategies available.</p>
+        <div class="stats">
+          <span class="stat"><i class="fas fa-cogs"></i> 3 Types</span>
+          <span class="stat"><i class="fas fa-percentage"></i> 90%+ Accuracy</span>
+        </div>
+      </div>
     </div>
-     
+    <footer style="margin-top:2rem;text-align:center;color:var(--text-secondary);">
+      <h4>© Powered by SECRET SOLUTION YT</h4>
+    </footer>
+    <div id="customAlert" class="custom-alert"></div>
+  </main>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script>
-      // Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyC9oOgsN0IE5vw48dnp1n4SykPSQsL8lSw",
-        authDomain: "sakibin-75f62.firebaseapp.com",
-        projectId: "sakibin-75f62",
-        storageBucket: "sakibin-75f62.appspot.com",
-        messagingSenderId: "732867500543",
-        appId: "1:732867500543:web:96df65624c7897c106efca",
-        measurementId: "G-BGGNPS1N1X"
-      };
+  <!-- Login Form Modal -->
+  <div id="loginForm" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--surface); padding: 2rem 2.5rem; border-radius: 1rem; border: 1px solid var(--primary); z-index: 2001; min-width:320px;">
+    <h2 style="color: var(--primary); text-align: center; margin-bottom: 1rem;">Login to Access Signals</h2>
+    <input type="email" id="email" placeholder="Email" style="width: 100%; margin-bottom: 1rem; padding: 0.8rem; border: 1px solid var(--primary); background: var(--background); color: var(--primary); border-radius: 4px;">
+    <input type="password" id="password" placeholder="Password" style="width: 100%; margin-bottom: 1rem; padding: 0.8rem; border: 1px solid var(--primary); background: var(--background); color: var(--primary); border-radius: 4px;">
+    <button onclick="login()" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">Login</button>
+    <button onclick="register()" class="btn" style="width: 100%; background: transparent; color: var(--primary); border: 1px solid var(--primary); margin-bottom: 0.5rem;">Register (Get 20 Free Coins)</button>
+    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+      <button onclick="showPasswordReset()" class="btn" style="width: 100%; background: transparent; color: var(--accent); border: 1px solid var(--accent); font-size: 0.9rem;">
+        <i class="fas fa-key" style="margin-right: 5px;"></i>Forgot Password?
+      </button>
+      <div id="passwordResetSection" style="display: none; margin-top: 1rem;">
+        <input type="email" id="resetEmail" placeholder="Enter your email for password reset" style="width: 100%; margin-bottom: 0.5rem; padding: 0.8rem; border: 1px solid var(--accent); background: var(--background); color: var(--primary); border-radius: 4px;">
+        <button onclick="sendPasswordReset()" class="btn btn-primary" style="width: 100%;">Send Reset Link</button>
+      </div>
+    </div>
+    <div id="authMessage" style="margin-top: 1rem; text-align: center; color: #ff4444;"></div>
+  </div>
 
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
+  <!-- Notification Bell Icon -->
+  <div id="notifBell" style="display:none; position:fixed; top:30px; right:180px; z-index:1100; cursor:pointer;">
+    <i class="fas fa-bell" style="font-size: 25px; color: var(--gold);"></i>
+    <span id="notifDot" style="display:none; position:absolute; top:2px; right:2px; width:10px; height:10px; background:#ff4444; border-radius:50%;"></span>
+  </div>
 
-      let currentUser = null;
-      let userToken = null;
+  <!-- Notification Popup -->
+  <div id="notifPopup" style="display:none; position:fixed; top:70px; right:30px; background:rgba(30,30,40,0.97); color:#ffae00; border:2px solid #d4af37; border-radius:14px; padding:22px 32px 18px 32px; font-size:1.12em; font-weight:bold; z-index:1200; box-shadow:0 4px 24px #0008; min-width:260px; max-width:350px; animation: notifPopIn 0.5s;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <i class="fas fa-bell"></i>
+      <span id="notifMsg">System notification</span>
+    </div>
+    <button onclick="closeNotifPopup()" style="margin-top:18px; background:var(--gold); color:var(--bg-dark); border:none; border-radius:8px; padding:6px 18px; font-weight:bold; cursor:pointer; float:right;">Close</button>
+  </div>
 
-      function toggleUserMenu() {
-        const menu = document.getElementById('userMenu');
-        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  <style>
+    @keyframes notifPopIn {
+      0% { transform: translateY(-30px) scale(0.9); opacity: 0; }
+      80% { transform: translateY(5px) scale(1.04); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC9oOgsN0IE5vw48dnp1n4SykPSQsL8lSw",
+      authDomain: "sakibin-75f62.firebaseapp.com",
+      projectId: "sakibin-75f62",
+      storageBucket: "sakibin-75f62.appspot.com",
+      messagingSenderId: "732867500543",
+      appId: "1:732867500543:web:96df65624c7897c106efca",
+      measurementId: "G-BGGNPS1N1X"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    let currentUser = null;
+    let userToken = null;
+
+    function toggleUserMenu() {
+      const menu = document.getElementById('userMenu');
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const avatar = document.getElementById('userAvatar');
+      const menu = document.getElementById('userMenu');
+      if (!avatar.contains(event.target)) {
+        menu.style.display = 'none';
       }
+    });
 
-      // Close menu when clicking outside
-      document.addEventListener('click', function(event) {
-        const avatar = document.getElementById('userAvatar');
-        const menu = document.getElementById('userMenu');
-        if (!avatar.contains(event.target)) {
-          menu.style.display = 'none';
-        }
-      });
+    // Authentication functions
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-      // Authentication functions
-      async function login() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-
-        try {
-          const userCredential = await auth.signInWithEmailAndPassword(email, password);
-          showAuthMessage('Login successful!', 'success');
-        } catch (error) {
-          showAuthMessage(error.message, 'error');
-        }
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        showAuthMessage('Login successful!', 'success');
+      } catch (error) {
+        showAuthMessage(error.message, 'error');
       }
+    }
 
-      async function register() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+    async function register() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
-        try {
-          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-          showAuthMessage('Registration successful! You got 20 free coins!', 'success');
-          
-          // Automatically send verification email after registration
-          setTimeout(async () => {
-            try {
-              await sendEmailVerification();
-            } catch (error) {
-              console.error('Error sending verification email:', error);
-            }
-          }, 1000);
-        } catch (error) {
-          showAuthMessage(error.message, 'error');
-        }
-      }
-
-      // Password reset functions
-      function showPasswordReset() {
-        const resetSection = document.getElementById('passwordResetSection');
-        resetSection.style.display = resetSection.style.display === 'none' ? 'block' : 'none';
-      }
-
-      async function sendPasswordReset() {
-        const email = document.getElementById('resetEmail').value;
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        showAuthMessage('Registration successful! You got 20 free coins!', 'success');
         
-        if (!email) {
-          showAuthMessage('Please enter your email address', 'error');
-          return;
-        }
+        // Automatically send verification email after registration
+        setTimeout(async () => {
+          try {
+            await sendEmailVerification();
+          } catch (error) {
+            console.error('Error sending verification email:', error);
+          }
+        }, 1000);
+      } catch (error) {
+        showAuthMessage(error.message, 'error');
+      }
+    }
 
+    // Password reset functions
+    function showPasswordReset() {
+      const resetSection = document.getElementById('passwordResetSection');
+      resetSection.style.display = resetSection.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function sendPasswordReset() {
+      const email = document.getElementById('resetEmail').value;
+      
+      if (!email) {
+        showAuthMessage('Please enter your email address', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          showAuthMessage('Password reset link sent to your email!', 'success');
+          document.getElementById('passwordResetSection').style.display = 'none';
+          document.getElementById('resetEmail').value = '';
+        } else {
+          showAuthMessage(data.error || 'Error sending reset link', 'error');
+        }
+      } catch (error) {
+        showAuthMessage('Error sending reset link', 'error');
+      }
+    }
+
+    // Email verification functions
+    async function sendEmailVerification() {
+      if (!userToken) {
+        showAuthMessage('Please login first', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/send-verification', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${userToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          showAlert('Email verification link sent! Please check your email.');
+        } else {
+          showAlert(data.error || 'Error sending verification email');
+        }
+      } catch (error) {
+        showAlert('Error sending verification email');
+      }
+    }
+
+    function logout() {
+      auth.signOut();
+    }
+
+    function showAuthMessage(message, type) {
+      const messageEl = document.getElementById('authMessage');
+      messageEl.textContent = message;
+      messageEl.style.color = type === 'success' ? '#00ff99' : '#ff4444';
+    }
+
+    function upgradeToPremium() {
+      // Replace 'yourtelegramusername' with your actual Telegram username
+      const telegramUrl = 'https://t.me/x_prime01';
+      window.open(telegramUrl, '_blank');
+      showAlert('Redirecting to Telegram for Premium upgrade...');
+    }
+
+    // Navigation functions
+    function goToCoinSignal() {
+      // Show signal maker section, hide nav buttons
+      document.getElementById('signalMakerSection').style.display = 'block';
+      document.getElementById('centerNavBtns').style.display = 'none';
+    }
+    function goToPRIMESignals() {
+      window.location.href = '/signalv2.html';
+    }
+    function goToGPT() {
+      window.location.href = '/gpt.html';
+    }
+    function goToAdmin() {
+      // Check if user is admin, then redirect accordingly
+      fetch('/api/profile', {
+        headers: {
+          'Authorization': `Bearer ${userToken}`
+        }
+      })
+      .then(res => res.json())
+      .then(userData => {
+        if (userData.admin === true) {
+          window.location.href = '/admin?pass=14133504';
+        } else {
+          window.location.href = '/chat.html';
+        }
+      })
+      .catch(() => {
+        window.location.href = '/chat.html';
+      });
+    }
+
+    // Attach navigation handlers after DOM loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('coinSignalBtn').onclick = goToCoinSignal;
+      document.getElementById('primeSignalsBtn').onclick = goToPRIMESignals;
+      document.getElementById('gptBtn').onclick = goToGPT;
+      document.getElementById('getPremiumBtn').onclick = upgradeToPremium;
+      document.getElementById('adminBtn').onclick = goToAdmin;
+      document.getElementById('binolaBtn').onclick = function() {
+        window.location.href = '/binola.html';
+      };
+      document.getElementById('signalTestBtn').onclick = function() {
+        window.location.href = '/signaltest.html';
+      };
+    });
+
+    async function updateUserInfo() {
+      if (!userToken) return;
+      try {
+        const response = await fetch('/api/profile', {
+          headers: {
+            'Authorization': `Bearer ${userToken}`
+          }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          document.getElementById('userEmail').textContent = currentUser.email;
+          document.getElementById('userStatus').textContent = userData.isPremium ? 'PREMIUM USER' : 'FREE USER';
+          document.getElementById('coinCount').textContent = `${userData.coins} Coins`;
+          document.getElementById('upgradeBtn').style.display = userData.isPremium ? 'none' : 'inline-block';
+
+          // Handle email verification status
+          const emailVerificationStatus = document.getElementById('emailVerificationStatus');
+          const verifyEmailBtn = document.getElementById('verifyEmailBtn');
+          
+          if (userData.emailVerified) {
+            emailVerificationStatus.style.display = 'none';
+            verifyEmailBtn.style.display = 'none';
+          } else {
+            emailVerificationStatus.style.display = 'block';
+            verifyEmailBtn.style.display = 'inline-block';
+          }
+
+          // Show/hide center navigation buttons
+          document.getElementById('coinSignalBtn').style.display = 'block';
+          document.getElementById('adminBtn').style.display = 'block';
+          document.getElementById('binolaBtn').style.display = 'block'; // Always show BINOLA
+          document.getElementById('signalTestBtn').style.display = 'block'; // Always show SIGNAL TEST
+          if (userData.isPremium) {
+            document.getElementById('primeSignalsBtn').style.display = 'block';
+            document.getElementById('gptBtn').style.display = 'block';
+            document.getElementById('getPremiumBtn').style.display = 'none';
+          } else {
+            document.getElementById('primeSignalsBtn').style.display = 'none';
+            document.getElementById('gptBtn').style.display = 'none';
+            document.getElementById('getPremiumBtn').style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }
+
+    // --- Notification System ---
+    let lastNotifId = null;
+    let currentNotif = null;
+
+    function fetchAndShowNotification(autoShow = false) {
+      fetch('/api/notification')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.message) {
+            lastNotifId = data.id || 1;
+            currentNotif = data;
+            document.getElementById('notifMsg').textContent = data.message;
+            document.getElementById('notifBell').style.display = 'block';
+            // Only show dot if popup is not open
+            if (document.getElementById('notifPopup').style.display !== 'block') {
+              document.getElementById('notifDot').style.display = 'block';
+            }
+            if (autoShow) showNotifPopup();
+          } else {
+            lastNotifId = null;
+            currentNotif = null;
+            document.getElementById('notifBell').style.display = 'none';
+            closeNotifPopup();
+          }
+        });
+    }
+
+    function showNotifPopup() {
+      if (!currentNotif) return;
+      document.getElementById('notifPopup').style.display = 'block';
+      document.getElementById('notifDot').style.display = 'none';
+    }
+
+    function closeNotifPopup() {
+      document.getElementById('notifPopup').style.display = 'none';
+      // If there is still a notification, show the dot again
+      if (currentNotif) {
+        document.getElementById('notifDot').style.display = 'block';
+      } else {
+        document.getElementById('notifDot').style.display = 'none';
+      }
+    }
+
+    document.getElementById('notifBell').onclick = function() {
+      if (currentNotif) showNotifPopup();
+    };
+
+    // Optionally, poll for new notifications every 60 seconds
+    setInterval(() => {
+      fetchAndShowNotification(false);
+    }, 60000);
+
+    // --- After login, show notification if exists ---
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        userToken = await user.getIdToken();
+
+        // Send token to server for verification
         try {
-          const response = await fetch('/api/auth/reset-password', {
+          const response = await fetch('/verifyToken', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ token: userToken })
           });
 
-          const data = await response.json();
-          
           if (response.ok) {
-            showAuthMessage('Password reset link sent to your email!', 'success');
-            document.getElementById('passwordResetSection').style.display = 'none';
-            document.getElementById('resetEmail').value = '';
-          } else {
-            showAuthMessage(data.error || 'Error sending reset link', 'error');
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block'; // Show main content
+            await updateUserInfo();
+            fetchAndShowNotification(true);
           }
         } catch (error) {
-          showAuthMessage('Error sending reset link', 'error');
+          console.error('Error verifying token:', error);
         }
+      } else {
+        currentUser = null;
+        userToken = null;
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('mainContent').style.display = 'none';
+        
+        // Update button visibility
+        document.getElementById('coinSignalBtn').style.display = 'none';
+        document.getElementById('primeSignalsBtn').style.display = 'none';
+        document.getElementById('gptBtn').style.display = 'none';
+        document.getElementById('getPremiumBtn').style.display = 'none';
+        document.getElementById('adminBtn').style.display = 'none';
+        document.getElementById('binolaBtn').style.display = 'block';
+        document.getElementById('signalTestBtn').style.display = 'block';
+      }
+    });
+
+    const pro_mode = false; // Toggle this to true or false
+
+    function toggleSelect(section, btn) {
+      const checkboxes = document.querySelectorAll(`#${section} input[type='checkbox']`);
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      checkboxes.forEach(cb => {
+        if (pro_mode || !allChecked && countSelected() < 3) {
+          cb.checked = !allChecked;
+          cb.closest('.pair').classList.toggle('selected', cb.checked);
+        }
+      });
+      btn.textContent = allChecked ? 'SELECT ALL' : 'CLEAR';
+    }
+
+    function countSelected() {
+      return document.querySelectorAll("input[type='checkbox']:checked").length;
+    }
+
+    function copySignals() {
+      let header = `⏳ Time frame 1 minutes\n🛑 1 step martingale if need\n\n`;
+      let signalLines = "";
+      document.querySelectorAll("#signalsBody tr").forEach(row => {
+        const cells = row.querySelectorAll("td");
+        const pair = cells[0].innerText.trim();
+        const time = cells[1].innerText.trim();
+        const direction = cells[2].innerText.trim().toUpperCase();
+        signalLines += `⚡${pair}\t${time}\t${direction}\n`;
+      });
+      const finalText = header + signalLines;
+      navigator.clipboard.writeText(finalText).then(() => showAlert("Signals copied!"));
+    }
+
+    function getSelectedPairs() {
+      const checkboxes = document.querySelectorAll("input[type='checkbox']:checked");
+      return Array.from(checkboxes).map(cb => {
+        const label = cb.nextElementSibling?.textContent.trim() || '';
+        return label.replace(/\//g, '').replace(/-OTC/i, '_otc');
+      }).join(',');
+    }
+
+    function showAlert(message, duration = 3000) {
+      const alertBox = document.getElementById("customAlert");
+      alertBox.textContent = message;
+      alertBox.classList.add("show");
+      setTimeout(() => alertBox.classList.remove("show"), duration);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const otcPairs = [
+        "EUR/USD-OTC", "GBP/USD-OTC", "USD/JPY-OTC", "USD/CAD-OTC",
+        "AUD/USD-OTC", "USD/CHF-OTC", "EUR/JPY-OTC", "EUR/GBP-OTC",
+        "GBP/JPY-OTC", "USD/BDT-OTC", "USDDZD-OTC", "USDTRY-OTC",
+        "USDCOP-OTC", "USDMXN-OTC", "USDBDT-OTC", "USDZAR-OTC",
+        "USDNGN-OTC", "USDPKR-OTC", "USDIDR-OTC", "NZDCAD-OTC",
+        "NZDCHF-OTC", "MCD-OTC", "MSFT-OTC"
+      ];
+
+
+      const otcContainer = document.getElementById('otc');
+
+      otcPairs.forEach(pair => {
+        const id = `otc-${pair.replace(/\W/g, '')}`;
+        const div = document.createElement('div');
+        div.className = 'pair';
+        div.innerHTML = `
+          <input type='checkbox' id='${id}' onchange='handleLimit(this)' />
+          <label for='${id}'><i class="fas fa-chart-line"></i> ${pair}</label>`;
+        otcContainer.appendChild(div);
+      });
+    });
+
+    function handleLimit(checkbox) {
+      const checked = checkbox.checked;
+      const parent = checkbox.closest('.pair');
+
+      if (!pro_mode && checked && countSelected() > 3) {
+        checkbox.checked = false;
+        showAlert("Free mode allows only 3 pairs.");
+        return;
       }
 
-      // Email verification functions
-      async function sendEmailVerification() {
-        if (!userToken) {
-          showAuthMessage('Please login first', 'error');
+      parent.classList.toggle("selected", checkbox.checked);
+    }
+
+    document.getElementById("signalForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const loader = document.getElementById("loader");
+      loader.style.display = "block";
+
+      setTimeout(() => {
+        loader.style.display = "none";
+
+        const start = document.getElementById("start").value;
+        const end = document.getElementById("end").value;
+        const duration = document.getElementById("duration").value;
+        const currency_pairs = getSelectedPairs();
+
+        if (!currency_pairs) {
+          showAlert("Please select at least one currency pair.");
           return;
         }
 
-        try {
-          const response = await fetch('/api/auth/send-verification', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${userToken}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          const data = await response.json();
-          
-          if (response.ok) {
-            showAlert('Email verification link sent! Please check your email.');
-          } else {
-            showAlert(data.error || 'Error sending verification email');
-          }
-        } catch (error) {
-          showAlert('Error sending verification email');
-        }
-      }
-
-      function logout() {
-        auth.signOut();
-      }
-
-      function showAuthMessage(message, type) {
-        const messageEl = document.getElementById('authMessage');
-        messageEl.textContent = message;
-        messageEl.style.color = type === 'success' ? '#00ff99' : '#ff4444';
-      }
-
-      function upgradeToPremium() {
-        // Replace 'yourtelegramusername' with your actual Telegram username
-        const telegramUrl = 'https://t.me/x_prime01';
-        window.open(telegramUrl, '_blank');
-        showAlert('Redirecting to Telegram for Premium upgrade...');
-      }
-
-      // Navigation functions
-      function goToCoinSignal() {
-        // Show signal maker section, hide nav buttons
-        document.getElementById('signalMakerSection').style.display = 'block';
-        document.getElementById('centerNavBtns').style.display = 'none';
-      }
-      function goToPRIMESignals() {
-        window.location.href = '/signalv2.html';
-      }
-      function goToGPT() {
-        window.location.href = '/gpt.html';
-      }
-      function goToAdmin() {
-        // Check if user is admin, then redirect accordingly
-        fetch('/api/profile', {
+        axios.get(`/api/signal?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&duration=${duration}&currency_pairs=${currency_pairs}&percentage_min=90`, {
           headers: {
             'Authorization': `Bearer ${userToken}`
           }
         })
-        .then(res => res.json())
-        .then(userData => {
-          if (userData.admin === true) {
-            window.location.href = '/admin?pass=14133504';
-          } else {
-            window.location.href = '/chat.html';
-          }
-        })
-        .catch(() => {
-          window.location.href = '/chat.html';
-        });
-      }
+          .then(response => {
+            const data = response.data;
+            const signals = data.signals;
+            const tbody = document.getElementById("signalsBody");
+            tbody.innerHTML = "";
 
-      // Attach navigation handlers after DOM loaded
-      document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('coinSignalBtn').onclick = goToCoinSignal;
-        document.getElementById('primeSignalsBtn').onclick = goToPRIMESignals;
-        document.getElementById('gptBtn').onclick = goToGPT;
-        document.getElementById('getPremiumBtn').onclick = upgradeToPremium;
-        document.getElementById('adminBtn').onclick = goToAdmin;
-        document.getElementById('binolaBtn').onclick = function() {
-          window.location.href = '/binola.html';
-        };
-        document.getElementById('signalTestBtn').onclick = function() {
-          window.location.href = '/signaltest.html';
-        };
-      });
+            if (signals.length > 0) {
+              signals.forEach(signal => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td>${signal.asset}-OTC</td><td>${signal.entry_time}</td><td class='${signal.main_direction}'>${signal.main_direction.toUpperCase()}</td>`;
+                tbody.appendChild(tr);
+              });
+              document.getElementById("signalsTable").style.display = "table";
+              document.getElementById("copyBtn").style.display = "block";
 
-      async function updateUserInfo() {
-        if (!userToken) return;
-        try {
-          const response = await fetch('/api/profile', {
-            headers: {
-              'Authorization': `Bearer ${userToken}`
-            }
-          });
-          if (response.ok) {
-            const userData = await response.json();
-            document.getElementById('userEmail').textContent = currentUser.email;
-            document.getElementById('userStatus').textContent = userData.isPremium ? 'PREMIUM USER' : 'FREE USER';
-            document.getElementById('coinCount').textContent = `${userData.coins} Coins`;
-            document.getElementById('upgradeBtn').style.display = userData.isPremium ? 'none' : 'inline-block';
-
-            // Handle email verification status
-            const emailVerificationStatus = document.getElementById('emailVerificationStatus');
-            const verifyEmailBtn = document.getElementById('verifyEmailBtn');
-            
-            if (userData.emailVerified) {
-              emailVerificationStatus.style.display = 'none';
-              verifyEmailBtn.style.display = 'none';
-            } else {
-              emailVerificationStatus.style.display = 'block';
-              verifyEmailBtn.style.display = 'inline-block';
-            }
-
-            // Show/hide center navigation buttons
-            document.getElementById('coinSignalBtn').style.display = 'block';
-            document.getElementById('adminBtn').style.display = 'block';
-            document.getElementById('binolaBtn').style.display = 'block'; // Always show BINOLA
-            document.getElementById('signalTestBtn').style.display = 'block'; // Always show SIGNAL TEST
-            if (userData.isPremium) {
-              document.getElementById('primeSignalsBtn').style.display = 'block';
-              document.getElementById('gptBtn').style.display = 'block';
-              document.getElementById('getPremiumBtn').style.display = 'none';
-            } else {
-              document.getElementById('primeSignalsBtn').style.display = 'none';
-              document.getElementById('gptBtn').style.display = 'none';
-              document.getElementById('getPremiumBtn').style.display = 'block';
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        }
-      }
-
-      // --- Notification System ---
-      let lastNotifId = null;
-      let currentNotif = null;
-
-      function fetchAndShowNotification(autoShow = false) {
-        fetch('/api/notification')
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.message) {
-              lastNotifId = data.id || 1;
-              currentNotif = data;
-              document.getElementById('notifMsg').textContent = data.message;
-              document.getElementById('notifBell').style.display = 'block';
-              // Only show dot if popup is not open
-              if (document.getElementById('notifPopup').style.display !== 'block') {
-                document.getElementById('notifDot').style.display = 'block';
+              // Update coin count
+              document.getElementById('coinCount').textContent = `${data.userCoins} Coins`;
+              if (data.userCoins <= 0) {
+                showAlert("You've used all your coins! Upgrade to Premium or ask admin for more coins.");
               }
-              if (autoShow) showNotifPopup();
             } else {
-              lastNotifId = null;
-              currentNotif = null;
-              document.getElementById('notifBell').style.display = 'none';
-              closeNotifPopup();
-            }
-          });
-      }
-
-      function showNotifPopup() {
-        if (!currentNotif) return;
-        document.getElementById('notifPopup').style.display = 'block';
-        document.getElementById('notifDot').style.display = 'none';
-      }
-
-      function closeNotifPopup() {
-        document.getElementById('notifPopup').style.display = 'none';
-        // If there is still a notification, show the dot again
-        if (currentNotif) {
-          document.getElementById('notifDot').style.display = 'block';
-        } else {
-          document.getElementById('notifDot').style.display = 'none';
-        }
-      }
-
-      document.getElementById('notifBell').onclick = function() {
-        if (currentNotif) showNotifPopup();
-      };
-
-      // Optionally, poll for new notifications every 60 seconds
-      setInterval(() => {
-        fetchAndShowNotification(false);
-      }, 60000);
-
-      // --- After login, show notification if exists ---
-      auth.onAuthStateChanged(async (user) => {
-        if (user) {
-          currentUser = user;
-          userToken = await user.getIdToken();
-
-          // Send token to server for verification
-          try {
-            const response = await fetch('/verifyToken', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ token: userToken })
-            });
-
-            if (response.ok) {
-              document.getElementById('loginForm').style.display = 'none';
-              document.getElementById('userAvatar').style.display = 'block';
-              document.getElementById('mainContent').style.display = 'block';
-              await updateUserInfo();
-              fetchAndShowNotification(true); // Show notification popup after login
-            }
-          } catch (error) {
-            console.error('Error verifying token:', error);
-          }
-        } else {
-          currentUser = null;
-          userToken = null;
-          document.getElementById('loginForm').style.display = 'block';
-          document.getElementById('userAvatar').style.display = 'none';
-          document.getElementById('mainContent').style.display = 'none';
-          // Hide all nav buttons
-          document.getElementById('coinSignalBtn').style.display = 'none';
-          document.getElementById('primeSignalsBtn').style.display = 'none';
-          document.getElementById('gptBtn').style.display = 'none';
-          document.getElementById('getPremiumBtn').style.display = 'none';
-          document.getElementById('adminBtn').style.display = 'none';
-          document.getElementById('binolaBtn').style.display = 'block'; // Always show BINOLA for not logged in too
-          document.getElementById('signalTestBtn').style.display = 'block'; // Always show SIGNAL TEST for not logged in too
-        }
-      });
-
-      const pro_mode = false; // Toggle this to true or false
-
-      function toggleSelect(section, btn) {
-        const checkboxes = document.querySelectorAll(`#${section} input[type='checkbox']`);
-        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-        checkboxes.forEach(cb => {
-          if (pro_mode || !allChecked && countSelected() < 3) {
-            cb.checked = !allChecked;
-            cb.closest('.pair').classList.toggle('selected', cb.checked);
-          }
-        });
-        btn.textContent = allChecked ? 'SELECT ALL' : 'CLEAR';
-      }
-
-      function countSelected() {
-        return document.querySelectorAll("input[type='checkbox']:checked").length;
-      }
-
-      function copySignals() {
-        let header = `⏳ Time frame 1 minutes\n🛑 1 step martingale if need\n\n`;
-        let signalLines = "";
-        document.querySelectorAll("#signalsBody tr").forEach(row => {
-          const cells = row.querySelectorAll("td");
-          const pair = cells[0].innerText.trim();
-          const time = cells[1].innerText.trim();
-          const direction = cells[2].innerText.trim().toUpperCase();
-          signalLines += `⚡${pair}\t${time}\t${direction}\n`;
-        });
-        const finalText = header + signalLines;
-        navigator.clipboard.writeText(finalText).then(() => showAlert("Signals copied!"));
-      }
-
-      function getSelectedPairs() {
-        const checkboxes = document.querySelectorAll("input[type='checkbox']:checked");
-        return Array.from(checkboxes).map(cb => {
-          const label = cb.nextElementSibling?.textContent.trim() || '';
-          return label.replace(/\//g, '').replace(/-OTC/i, '_otc');
-        }).join(',');
-      }
-
-      function showAlert(message, duration = 3000) {
-        const alertBox = document.getElementById("customAlert");
-        alertBox.textContent = message;
-        alertBox.classList.add("show");
-        setTimeout(() => alertBox.classList.remove("show"), duration);
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-
-        const otcPairs = [
-          "EUR/USD-OTC", "GBP/USD-OTC", "USD/JPY-OTC", "USD/CAD-OTC",
-          "AUD/USD-OTC", "USD/CHF-OTC", "EUR/JPY-OTC", "EUR/GBP-OTC",
-          "GBP/JPY-OTC", "USD/BDT-OTC", "USDDZD-OTC", "USDTRY-OTC",
-          "USDCOP-OTC", "USDMXN-OTC", "USDBDT-OTC", "USDZAR-OTC",
-          "USDNGN-OTC", "USDPKR-OTC", "USDIDR-OTC", "NZDCAD-OTC",
-          "NZDCHF-OTC", "MCD-OTC", "MSFT-OTC"
-        ];
-
-
-        const otcContainer = document.getElementById('otc');
-
-        otcPairs.forEach(pair => {
-          const id = `otc-${pair.replace(/\W/g, '')}`;
-          const div = document.createElement('div');
-          div.className = 'pair';
-          div.innerHTML = `
-            <input type='checkbox' id='${id}' onchange='handleLimit(this)' />
-            <label for='${id}'><i class="fas fa-chart-line"></i> ${pair}</label>`;
-          otcContainer.appendChild(div);
-        });
-      });
-
-      function handleLimit(checkbox) {
-        const checked = checkbox.checked;
-        const parent = checkbox.closest('.pair');
-
-        if (!pro_mode && checked && countSelected() > 3) {
-          checkbox.checked = false;
-          showAlert("Free mode allows only 3 pairs.");
-          return;
-        }
-
-        parent.classList.toggle("selected", checkbox.checked);
-      }
-
-      document.getElementById("signalForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-
-        const loader = document.getElementById("loader");
-        loader.style.display = "block";
-
-        setTimeout(() => {
-          loader.style.display = "none";
-
-          const start = document.getElementById("start").value;
-          const end = document.getElementById("end").value;
-          const duration = document.getElementById("duration").value;
-          const currency_pairs = getSelectedPairs();
-
-          if (!currency_pairs) {
-            showAlert("Please select at least one currency pair.");
-            return;
-          }
-
-          axios.get(`/api/signal?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&duration=${duration}&currency_pairs=${currency_pairs}&percentage_min=90`, {
-            headers: {
-              'Authorization': `Bearer ${userToken}`
+              showAlert("No signals found.");
             }
           })
-            .then(response => {
-              const data = response.data;
-              const signals = data.signals;
-              const tbody = document.getElementById("signalsBody");
-              tbody.innerHTML = "";
+          .catch(error => {
+            if (error.response?.status === 403) {
+              showAlert("Insufficient coins! Upgrade to Premium for unlimited signals.");
+            } else if (error.response?.status === 401) {
+              showAlert("Please login to access signals.");
+            } else {
+              showAlert("Error fetching signals.");
+            }
+          });
 
-              if (signals.length > 0) {
-                signals.forEach(signal => {
-                  const tr = document.createElement("tr");
-                  tr.innerHTML = `<td>${signal.asset}-OTC</td><td>${signal.entry_time}</td><td class='${signal.main_direction}'>${signal.main_direction.toUpperCase()}</td>`;
-                  tbody.appendChild(tr);
-                });
-                document.getElementById("signalsTable").style.display = "table";
-                document.getElementById("copyBtn").style.display = "block";
+      }, 3000);
+    });
 
-                // Update coin count
-                document.getElementById('coinCount').textContent = `${data.userCoins} Coins`;
-                if (data.userCoins <= 0) {
-                  showAlert("You've used all your coins! Upgrade to Premium or ask admin for more coins.");
-                }
-              } else {
-                showAlert("No signals found.");
-              }
-            })
-            .catch(error => {
-              if (error.response?.status === 403) {
-                showAlert("Insufficient coins! Upgrade to Premium for unlimited signals.");
-              } else if (error.response?.status === 401) {
-                showAlert("Please login to access signals.");
-              } else {
-                showAlert("Error fetching signals.");
-              }
-            });
-
-        }, 3000);
+    // Sidebar and overlay toggle for mobile
+    const menuToggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.overlay');
+    menuToggle.addEventListener('click', () => {
+      menuToggle.classList.toggle('active');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    });
+    overlay.addEventListener('click', () => {
+      menuToggle.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 992) {
+        menuToggle.classList.remove('active');
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+      }
+    });
+    // Search bar filters cards
+    document.querySelector('.search-bar input').addEventListener('input', (e) => {
+      const search = e.target.value.toLowerCase();
+      document.querySelectorAll('.card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(search) ? 'block' : 'none';
       });
-    </script>
-  </body>
-  </html>
+    });
+  </script>
+</body>
+</html>

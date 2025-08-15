@@ -3,7 +3,8 @@
     "email": "xakibin@gmail.com",
     "coins": 20,
     "isPremium": true,
-    "signalsUsed": 0
+    "signalsUsed": 0,
+    "emailVerified": false
   },
   "c1qAIjpm5yZ3zpzCKV0LyEtPRXE3": {
     "email": "akternurjahan757@gmail.com",
@@ -20,9 +21,10 @@
   },
   "NzTsgFssbeVpaJ1Dhvd3uqqIBX33": {
     "email": "mrwizard778@gmail.com",
-    "coins": 2,
+    "coins": 10,
     "isPremium": true,
-    "signalsUsed": 1
+    "signalsUsed": 1,
+    "emailVerified": false
   },
   "SHy6xht1YBY8bzkxL2jEzYLeG1z1": {
     "email": "wahidqu143@gmail.com",
